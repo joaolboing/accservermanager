@@ -21,20 +21,7 @@
         {% endfor %}
     {% endif %}
 
-    <div class="card">
-        {% load material_form %}
-        <h6 style="font-weight:bold">Instance config</h6>
-        <form name="instance_form" action="start" method="POST"
-              onsubmit="return (document.forms['instance_form']['cfg'].value.length>0)">{% csrf_token %}
-            {% form form=form %}{% endform %}
-            <button class="btn green" type="submit">Start</button>
-        </form>
-
-    </div>
-</div>
-
-<div class="container">
-    <div class="card">
+<div class="card">
         <h6 style="font-weight:bold">Server instances</h6><br>
         <table>
             <tr><td>Instance Name</td><td>Server Name</td><td>Config</td><td>UDP</td><td>TCP</td><td>PID</td><td></td></tr>
@@ -67,6 +54,21 @@
             </tr>
             {% endfor %}
         </table>
+    </div>
+
+</div>
+
+<div class="container">
+    
+    <div class="card">
+        {% load material_form %}
+        <h6 style="font-weight:bold">Instance config</h6>
+        <form name="instance_form" action="start" method="POST"
+              onsubmit="return (document.forms['instance_form']['cfg'].value.length>0)">{% csrf_token %}
+            {% form form=form %}{% endform %}
+            <button class="btn green" type="submit">Start</button>
+        </form>
+
     </div>
 </div>
 
