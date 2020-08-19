@@ -37,7 +37,7 @@ class LeaderBoard(tables.Table):
     def render_drivers(self, value):
         short = ' / '.join([d['shortName'] for d in value])
         long = ' / '.join(['%s %s'%(d['firstName'],d['lastName']) for d in value])
-        return format_html('<p title="{}">{}</p>', long, short)
+        return format_html('<p>({}) {}</p>', short, long)
 
     def render_time(self, value):
         if(value == 2147483647):
