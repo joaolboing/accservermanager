@@ -1,6 +1,6 @@
 from django import forms
 
-from accservermanager.settings import CAR_GROUPS
+from accservermanager.settings import CAR_GROUPS,FORMATION_LAP_TYPES
 from cfgs.confEdit import createLabel
 from cfgs.confSelect import getCfgsField
 
@@ -45,10 +45,11 @@ class SettingsForm(BaseForm):
     isRaceLocked = forms.BooleanField(required=False)
     allowAutoDQ = forms.BooleanField(required=False)
     shortFormationLap = forms.BooleanField(required=False)
+    formatioLapType = forms.ChoiceField(widget=forms.Select, choices=FORMATION_LAP_TYPES, initial=3)
     dumpEntryList = forms.BooleanField(required=False)
     dumpLeaderboards = forms.BooleanField(required=False)
     randomizeTrackWhenEmpty = forms.BooleanField(required=False)
-    ignorePrematureDisconnects = forms.BooleanField(required=False)
+    ignorePrematureDisconnects = forms.BooleanField(required=False, initial=True)
 
 
 class ConfigurationForm(BaseForm):

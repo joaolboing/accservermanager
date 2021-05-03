@@ -259,4 +259,12 @@ CUP_CATEGORY = {
     (4, "National")
 }
 
+FORMATION_LAP_TYPES = {
+    (0, "Free (replaces /manual start), only usable for private servers"),
+    (1, "Old limiter lap"),
+    (3, "Default formation lap with position control and UI"),
+    (4, "One free formation lap + 1 ghosted cars lap"),
+    (5, "Short formation lap with position control and UI + 1 ghosted cars lap")
+}
+
 MESSAGES = json.load(open(os.path.join(BASE_DIR, 'accservermanager/messages.json'), 'r'))
