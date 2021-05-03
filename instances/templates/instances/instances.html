@@ -7,6 +7,44 @@
     }
 </style>
 
+
+<div class="container">
+    <div class="card">
+        <h5 style="font-weight:bold">Server instances</h5><br>
+        <table>
+            <tr><td>Instance Name</td><td>Server Name</td><td>Config</td><td>UDP</td><td>TCP</td><td>PID</td><td></td></tr>
+            {% for name,executor in executors.items %}
+            <tr id="row{{forloop.counter0}}">
+                <td><a href="/instances/{{name}}" class="btn blue">{{name}}</a></td>
+                <td style="">{{executor.serverName}}</td>
+                <td style="">{{executor.config}}</td>
+                <td style="">{{executor.udpPort}}</td>
+                <td style="">{{executor.tcpPort}}</td>
+
+                <td id="pid{{forloop.counter0}}" style="">
+                    {% if executor.is_alive %}
+                        {{executor.p.pid}}
+                    {% else %}
+                        exited with {{executor.retval}}
+                    {% endif %}
+                </td>
+                {% if executor.is_alive %}
+                <td>
+                    <button id="stop{{forloop.counter0}}" class="btn red" onclick="stop(this, '{{name}}')">Stop</button>
+                </td><td></td>
+                {% else %}
+                <td>
+                    <button id="restart{{forloop.counter0}}" class="btn green" onclick="start(this, '{{name}}')">Start</button>
+                </td><td>
+                    <button id="delete{{forloop.counter0}}" class="btn red" onclick="del(this, '{{name}}')">Delete</button>
+                </td>
+                {% endif %}
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+</div>
+
 <div class="container">
     {% if messages %}
         {% for message in messages %}
@@ -51,43 +89,6 @@
             <button class="btn green" type="submit">Start</button>
         </form>
 
-    </div>
-</div>
-
-<div class="container">
-    <div class="card">
-        <h5 style="font-weight:bold">Server instances</h5><br>
-        <table>
-            <tr><td>Instance Name</td><td>Server Name</td><td>Config</td><td>UDP</td><td>TCP</td><td>PID</td><td></td></tr>
-            {% for name,executor in executors.items %}
-            <tr id="row{{forloop.counter0}}">
-                <td><a href="/instances/{{name}}" class="btn blue">{{name}}</a></td>
-                <td style="">{{executor.serverName}}</td>
-                <td style="">{{executor.config}}</td>
-                <td style="">{{executor.udpPort}}</td>
-                <td style="">{{executor.tcpPort}}</td>
-
-                <td id="pid{{forloop.counter0}}" style="">
-                    {% if executor.is_alive %}
-                        {{executor.p.pid}}
-                    {% else %}
-                        exited with {{executor.retval}}
-                    {% endif %}
-                </td>
-                {% if executor.is_alive %}
-                <td>
-                    <button id="stop{{forloop.counter0}}" class="btn red" onclick="stop(this, '{{name}}')">Stop</button>
-                </td><td></td>
-                {% else %}
-                <td>
-                    <button id="restart{{forloop.counter0}}" class="btn green" onclick="start(this, '{{name}}')">Start</button>
-                </td><td>
-                    <button id="delete{{forloop.counter0}}" class="btn red" onclick="del(this, '{{name}}')">Delete</button>
-                </td>
-                {% endif %}
-            </tr>
-            {% endfor %}
-        </table>
     </div>
 </div>
 
