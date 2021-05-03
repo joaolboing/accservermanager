@@ -97,7 +97,7 @@ def download(request, *args, **kwargs):
     _f = parse_url(args, kwargs)
     print(_f, os.path.basename(_f))
     if _f is not None and os.path.isfile(_f):
-        with open(_f, 'r') as fh:
+        with open(_f, 'rb') as fh:
             response = HttpResponse(fh.read(), content_type="text/plain")
             response['Content-Disposition'] = 'inline; filename=' + os.path.basename(_f)
             return response
