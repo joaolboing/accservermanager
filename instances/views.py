@@ -291,6 +291,8 @@ def index(request):
     cfg['dumpLeaderboards'] = 1
     cfg['registerToLobby'] = 1
     cfg['dumpLeaderboards'] = 1
+    cfg['ignorePrematureDisconnects'] = 1
+    cfg['formationLapType'] = 3
 
     # overwrite nonsense trackMedalsRequirement default value
     if cfg['trackMedalsRequirement'] == -1:
