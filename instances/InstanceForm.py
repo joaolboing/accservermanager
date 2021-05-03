@@ -45,7 +45,7 @@ class SettingsForm(BaseForm):
     isRaceLocked = forms.BooleanField(required=False)
     allowAutoDQ = forms.BooleanField(required=False)
     shortFormationLap = forms.BooleanField(required=False)
-    formatioLapType = forms.ChoiceField(widget=forms.Select, choices=FORMATION_LAP_TYPES, initial=3)
+    formationLapType = forms.ChoiceField(widget=forms.Select, choices=FORMATION_LAP_TYPES, initial=3)
     dumpEntryList = forms.BooleanField(required=False)
     dumpLeaderboards = forms.BooleanField(required=False)
     randomizeTrackWhenEmpty = forms.BooleanField(required=False)
