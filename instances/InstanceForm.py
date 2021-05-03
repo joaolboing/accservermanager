@@ -1,6 +1,6 @@
 from django import forms
 
-from accservermanager.settings import CAR_GROUPS,FORMATION_LAP_TYPES
+from accservermanager.settings import CAR_GROUPS
 from cfgs.confEdit import createLabel
 from cfgs.confSelect import getCfgsField
 
