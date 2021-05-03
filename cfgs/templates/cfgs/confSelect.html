@@ -12,16 +12,6 @@
 
 
 {% load material_form %}
-<div class="container">
-    <div class="card">
-        <h6 style="font-weight:bold">Create new config</h6>
-        <form action="/cfgs/create" method="post">
-            {% csrf_token %}
-            {% form form=form %}{% endform %}
-            <input type="submit" value="Create" class="btn green">
-        </form>
-    </div>
-</div>
 
 <div class="container">
     <div class="card">
@@ -81,5 +71,17 @@
         </table>
     </div>
 </div>
+
+<div class="container">
+    <div class="card">
+        <h6 style="font-weight:bold">Create new config</h6>
+        <form action="/cfgs/create" method="post">
+            {% csrf_token %}
+            {% form form=form %}{% endform %}
+            <input type="submit" value="Create" class="btn green">
+        </form>
+    </div>
+</div>
+
 
 {% endblock %}
