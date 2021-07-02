@@ -249,7 +249,7 @@ def create(request):
         shutil.copy(os.path.join(settings.ACCSERVER, f), os.path.join(inst_dir, f))
 
     # symlink the accServer.exe file. When you update the server bin you don't have to recreate all your instances
-    os.remove(os.path.join(settings.ACCSERVER, 'accServer.exe'))
+    os.remove( os.path.join(inst_dir, 'accServer.exe'))
     os.symlink(os.path.join(settings.ACCSERVER, 'accServer.exe'), os.path.join(inst_dir, 'accServer.exe'))
 
     # the target configuration
