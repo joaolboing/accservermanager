@@ -18,8 +18,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # Application definition
 
 INSTALLED_APPS = [
-    'material',
-    'material.frontend',
+    'django_bootstrap5',
     'django_bootstrap_breadcrumbs',
     'django_tables2',
     'django.contrib.admin',
@@ -121,6 +120,9 @@ SECRET_KEY = os.environ['SECRET_KEY'] \
 ALLOWED_HOSTS = json.loads(os.environ['ALLOWED_HOSTS']) \
     if 'ALLOWED_HOSTS' in os.environ else []
 
+CSRF_TRUSTED_ORIGINS = json.loads(os.environ['CSRF_TRUSTED_ORIGINS']) \
+    if 'CSRF_TRUSTED_ORIGINS' in os.environ else []
+
 ALLOW_SAME_PORTS = True if os.getenv('ALLOW_SAME_PORTS','False').lower() == 'true' else False
 
 try:
@@ -138,7 +140,12 @@ DATABASES = {
 }
 
 # list of acc server files that are copied to the instance, make sure they are found
-SERVER_FILES = ['accServer.exe','cfg/configuration.json','cfg/settings.json']
+SERVER_FILES = [
+    'accServer.exe',
+    'cfg/configuration.json',
+    'cfg/settings.json',
+    'cfg/assistRules.json',
+]
 for f in SERVER_FILES:
     if not os.path.isfile(os.path.join(ACCSERVER, f)):
         raise Exception('Cannot find required server file: %s.'%f)
@@ -152,6 +159,20 @@ SESSION_TEMPLATE = {
     "sessionDurationMinutes": 10
 }
 
+EVENT_RULES_TEMPLATE = {
+    "qualifyStandingType": 1,
+    "pitWindowLengthSec": -1,
+    "driverStintTimeSec": -1,
+    "mandatoryPitstopCount": 0,
+    "maxTotalDrivingTime": -1,
+    "maxDriversCount": 1,
+    "isRefuellingAllowedInRace": True,
+    "isRefuellingTimeFixed": False,
+    "isMandatoryPitstopRefuellingRequired": False,
+    "isMandatoryPitstopTyreChangeRequired": False,
+    "isMandatoryPitstopSwapDriverRequired": False,
+    "tyreSetCount": 50
+}
 
 # list of available tracks
 TRACKS = [
@@ -160,28 +181,27 @@ TRACKS = [
     ('hungaroring', 'Hungaroring'),
     ('misano', 'Misano'),
     ('monza', 'Monza'),
-    ('nurburgring', 'Nurburgring GP'),
+    ('nurburgring', 'Nürburgring GP'),
     ('paul_ricard', 'Paul Ricard'),
     ('silverstone', 'Silverstone'),
     ('spa', 'Spa-Francorchamps'),
     ('zolder', 'Zolder'),
     ('zandvoort', 'Zandvoort'),
+    ('kyalami', 'Kyalami'),
+    ('laguna_seca', 'Laguna Seca'),
+    ('mount_panorama', 'Mount Panaorama (Bathurst)'),
+    ('suzuka', 'Suzuka'),
+    ('imola', 'Imola'),
+    ('oulton_park', 'Oulton Park'),
+    ('donington', 'Donington'),
+    ('snetterton', 'Snetterton'),
+    ('cota', 'Circuit of the Americas (COTA)'),
+    ('indianapolis', 'Indianapolis Motor Speedway'),
+    ('watkins_glen', 'Watkins Glen International'),
+    ('valencia', 'Circuit de la Comunitat Valenciana Ricardo Tormo'),
+    ('red_bull_ring', 'Red Bull Ring (Spielberg)'),
+    ('nurburgring_24h', 'Nürburgring Nordschleife 24h'),
 ]
-TRACKS_TEMP = []
-for y in ['2019', '2020']:
-    TRACKS_TEMP.extend([(f"{t[0]}_{y}", f"{t[1]} {y}") for t in TRACKS])
-
-TRACKS.extend(TRACKS_TEMP)
-TRACKS.extend([
-    ('kyalami_2019', 'Kyalami'),
-    ('laguna_seca_2019', 'Laguna Seca'),
-    ('mount_panorama_2019', 'Mount Panaorama'),
-    ('suzuka_2019', 'Suzuka'),
-    ('imola_2020', 'Imola'),
-    ('oulton_park_2019', 'Oulton_park'),
-    ('donington_2019', 'Donington'),
-    ('snetterton_2019', 'Snetterton'),
-])
 
 
 CAR_MODEL_TYPES = (
@@ -211,6 +231,17 @@ CAR_MODEL_TYPES = (
     (23, 'Porsche 911 II GT3 R (2019)'),
     (24, 'Ferrari 488 GT3 Evo 2020'),
     (25, 'Mercedes-AMG GT3 2020'),
+    (26, 'Ferrari 488 Challenge Evo'),
+    (27, 'BMW M2 CS Racing'),
+    (28, 'Porsche 911 GT3 Cup (Type 992)'),
+    (29, 'Lamborghini Huracán Super Trofeo EVO2'),
+    (30, 'BMW M4 GT3'),
+    (31, 'Audi R8 LMS GT3 evo II'),
+    (32, 'Ferrari 296 GT3'),
+    (33, 'Lamborghini Huracan Evo2'),
+    (34, 'Porsche 992 GT3 R'),
+    (35, 'McLaren 720S GT3 Evo 2023'),
+    (36, 'Ford Mustang GT3 2024'),
 
     (50, 'Alpine A110 GT4'),
     (51, 'Aston Martin Vantage GT4'),
@@ -223,14 +254,22 @@ CAR_MODEL_TYPES = (
     (59, 'McLaren 570S GT4'),
     (60, 'Mercedes AMG GT4'),
     (61, 'Porsche 718 Cayman GT4'),
+
+    (80, 'Audi R8 LMS GT2'),
+    (82, 'KTM XBOW GT2'),
+    (83, 'Maserati MC20 GT2'),
+    (84, 'Mercedes AMG GT2'),
+    (85, 'Porsche 911 GT2 RS CS Evo'),
+    (86, 'Porsche 935'),
 )
 
 CAR_GROUPS = (
-    ("FreeForAll","FreeForAll"),
+    ("FreeForAll", "FreeForAll"),
+    ("GT2", "GT2"),
     ("GT3", "GT3"),
-    ("GT4",  "GT4"),
-    ("Cup", "Cup"),
-    ("ST","ST")
+    ("GT4", "GT4"),
+    ("GTC", "GTC"),
+    ("TCX", "TCX"),
 )
 
 SESSION_TYPES = (

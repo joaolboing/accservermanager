@@ -1,8 +1,8 @@
-FROM debian:10.5-slim
+FROM debian:11.5-slim
 
 RUN apt-get update && \
-    DEBIAN_FRONTEND=noninteractive apt-get install -y wine-development python3-pip && \
-    apt-get clean  && \
+    DEBIAN_FRONTEND=noninteractive apt-get --no-install-recommends install -y wine python3-pip && \
+    apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
 RUN mkdir -p /accservermanager /data
