@@ -1,4 +1,4 @@
-import os, shutil, json, time, string, glob
+import os, shutil, json, time, string, glob, platform
 
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, HttpResponseRedirect, Http404
@@ -29,6 +29,8 @@ resources = [
     ('configuration',  "configuration.json", "Download"),
     ('event',  "event.json", "Download"),
     ('settings',  "settings.json", "Download"),
+    ('assistRules',  "assistRules.json", "Download"),
+    ('eventRules',  "eventRules.json", "Download"),
 ]
 
 @login_required
@@ -70,20 +72,33 @@ def serverlog(request, name):
 
 @login_required
 def download_configuration_file(request, name):
-    cfg = os.path.join(settings.INSTANCES, name, 'cfg', 'configuration.json')
-    return download(cfg, content_type='text/json')
+    f = os.path.join(settings.INSTANCES, name, 'cfg', 'configuration.json')
+    return download(f, content_type='text/json')
 
 
 @login_required
 def download_event_file(request, name):
-    cfg = os.path.join(settings.INSTANCES, name, 'cfg', 'event.json')
-    return download(cfg, content_type='text/json')
+    f = os.path.join(settings.INSTANCES, name, 'cfg', 'event.json')
+    return download(f, content_type='text/json')
 
 
 @login_required
 def download_settings_file(request, name):
-    cfg = os.path.join(settings.INSTANCES, name, 'cfg', 'settings.json')
-    return download(cfg, content_type='text/json')
+    f = os.path.join(settings.INSTANCES, name, 'cfg', 'settings.json')
+    return download(f, content_type='text/json')
+
+
+@login_required
+def download_assistRules_file(request, name):
+    f = os.path.join(settings.INSTANCES, name, 'cfg', 'assistRules.json')
+    return download(f, content_type='text/json')
+
+
+@login_required
+def download_eventRules_file(request, name):
+    f = os.path.join(settings.INSTANCES, name, 'cfg', 'eventRules.json')
+    return download(f, content_type='text/json')
+
 
 
 # https://stackoverflow.com/questions/136168/get-last-n-lines-of-a-file-with-python-similar-to-tail
@@ -111,7 +126,7 @@ def log(_f, n):
 
 def download(_f, content_type="text/plain"):
     if _f is not None and os.path.isfile(_f):
-        with open(_f, 'r', encoding='utf-16') as fh:
+        with open(_f, 'r', encoding='utf-16' if content_type=='text/json' else None) as fh:
             response = HttpResponse(fh.read(), content_type=content_type)
             response['Content-Disposition'] = 'inline; filename=' + os.path.basename(_f)
             return response
@@ -184,17 +199,17 @@ def render_from(request, form):
 
 def write_config(name, inst_dir, form):
     ### use the values of the default *.json as basis
-    cfg = json.load(open(os.path.join(settings.ACCSERVER, 'cfg', name), 'r', encoding='utf-16'))
+    cfg = {}
+    if os.path.isfile(os.path.join(settings.ACCSERVER, 'cfg', name)):
+        cfg = json.load(open(os.path.join(settings.ACCSERVER, 'cfg', name), 'r', encoding='utf-16'))
 
-    conf_keys = ['udpPort','tcpPort', 'maxConnections', 'lanDiscovery', 'registerToLobby']
-    if name == 'settings.json':
-        keys = filter(lambda x:x not in (conf_keys+['csrfmiddlewaretoken', 'cfg', 'instanceName']),
-                      form.cleaned_data.keys())
-    else: keys = conf_keys
-
-    for key in keys:
+    for key in form.cleaned_data.keys():
+        if key == 'csrfmiddlewaretoken': continue
         value = form.cleaned_data[key]
-        if isinstance(value, bool): value = int(value)
+        # eventRules needs to be true/false not 0/1
+        if name != 'eventRules.json':
+            if isinstance(value, bool): value = int(value)
+
         if value is not None: cfg[key] = value
 
     # write the file into the instances' directory
@@ -222,14 +237,14 @@ def create(request):
         messages.error(request, "Instance with similar name already exists")
         return render_from(request, form)
 
-    if not settings.ALLOW_SAME_PORTS and form['udpPort'].value() == form['tcpPort'].value():
-        messages.error(request,'UDP and TCP port have to be different')
+    if not settings.ALLOW_SAME_PORTS and form.configuration['udpPort'].value() == form.configuration['tcpPort'].value():
+        messages.error(request, 'UDP and TCP port have to be different')
         return render_from(request, form)
 
     # check if a running instance already uses the same ports
     if len(list(filter(lambda x: x.is_alive() and
-                                  (form['udpPort'].value() in [x.udpPort, x.tcpPort] or
-                                   form['tcpPort'].value() in [x.udpPort, x.tcpPort]),
+                                  (form.configuration['udpPort'].value() in [x.udpPort, x.tcpPort] or
+                                   form.configuration['tcpPort'].value() in [x.udpPort, x.tcpPort]),
                         executors.values()))) > 0:
         messages.error(request, "The ports are already in use")
         return render_from(request, form)
@@ -240,22 +255,26 @@ def create(request):
         messages.error(request, "The instance directory exists already")
         return render_from(request, form)
 
-    # create the directory for the instance, copy necessary files
+    # create the directory for the instance
     os.makedirs(os.path.join(inst_dir, 'cfg'))
     os.makedirs(os.path.join(inst_dir, 'log'))
-    for f in settings.SERVER_FILES:
-        shutil.copy(os.path.join(settings.ACCSERVER,f), os.path.join(inst_dir,f))
-
-    # the target configuration
-    cfg = os.path.join(settings.CONFIGS, form['cfg'].value() + '.json')
+    # link the server exe into the instance environment
+    os.symlink(os.path.join(settings.ACCSERVER, settings.SERVER_FILES[0]),
+               os.path.join(inst_dir, settings.SERVER_FILES[0]))
+    # the target configuration json
+    cfg = os.path.join(settings.CONFIGS, form['event'].value() + '.json')
     # link the requested config into the instance environment
     os.symlink(cfg, os.path.join(inst_dir, 'cfg', 'event.json'))
+    # link (possible) cars directory into the instance environment
+    if os.path.isdir(os.path.join(settings.ACCSERVER, 'cfg', 'cars')):
+        os.symlink(os.path.join(settings.ACCSERVER, 'cfg', 'cars'),
+                   os.path.join(inst_dir, 'cfg', 'cars'))
 
-    # write the configuration.json
-    write_config('configuration.json', inst_dir, form)
-
-    # write the settings.json
-    write_config('settings.json', inst_dir, form)
+    # write the json files
+    write_config('configuration.json', inst_dir, form.configuration)
+    write_config('settings.json', inst_dir, form.settings)
+    write_config('assistRules.json', inst_dir, form.assistRules)
+    write_config('eventRules.json', inst_dir, form.eventRules)
 
     # start the instance
     start(request, name)
@@ -281,6 +300,13 @@ def index(request):
         settings.ACCSERVER, 'cfg', 'configuration.json'), 'r', encoding='utf-16'))
     cfg.update(json.load(open(os.path.join(
         settings.ACCSERVER, 'cfg', 'settings.json'), 'r', encoding='utf-16')))
+    cfg.update(json.load(open(os.path.join(
+        settings.ACCSERVER, 'cfg', 'assistRules.json'), 'r', encoding='utf-16')))
+    if os.path.isfile(os.path.join(settings.ACCSERVER, 'cfg', 'eventRules.json')):
+        cfg.update(json.load(open(os.path.join(
+            settings.ACCSERVER, 'cfg', 'eventRules.json'), 'r', encoding='utf-16')))
+    else:
+        cfg.update(settings.EVENT_RULES_TEMPLATE)
 
     # some static defaults
     cfg['instanceName'] = random_word()
@@ -288,6 +314,8 @@ def index(request):
     cfg['dumpLeaderboards'] = 1
     cfg['registerToLobby'] = 1
     cfg['dumpLeaderboards'] = 1
+    # this setting seems to work only in windows
+    cfg['ignorePrematureDisconnects'] = platform.system() == "Windows"
 
     # overwrite nonsense trackMedalsRequirement default value
     if cfg['trackMedalsRequirement'] == -1:
