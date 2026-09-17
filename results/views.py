@@ -88,7 +88,10 @@ def results(request, *args, **kwargs):
 
     context = {
         'path': [(j, '/'+'/'.join(path[:i+1])) for i,j in enumerate(path)],
-        'table': LeaderBoard(results['sessionResult']['leaderBoardLines'])
+        'table': LeaderBoard(results['sessionResult']['leaderBoardLines']),
+        'instance': kwargs['instance'],
+        'title': args[0] if args else 'Result',
+        'is_detail': True,
     }
     return render(request, 'results/results.html', context)
 
@@ -97,7 +100,7 @@ def download(request, *args, **kwargs):
     _f = parse_url(args, kwargs)
     print(_f, os.path.basename(_f))
     if _f is not None and os.path.isfile(_f):
-        with open(_f, 'r') as fh:
+        with open(_f, 'rb') as fh:
             response = HttpResponse(fh.read(), content_type="text/plain")
             response['Content-Disposition'] = 'inline; filename=' + os.path.basename(_f)
             return response
@@ -133,5 +136,8 @@ def resultSelect(request, instance):
     context = {
         'path' : [(j, '/'+'/'.join(path[:i+1])) for i,j in enumerate(path)],
         'table' : table,
+        'instance': instance,
+        'title': 'Results',
+        'is_detail': False,
     }
     return render(request, 'results/results.html', context)

@@ -1,31 +1,21 @@
 {% extends "base.html" %}
+{% block title %}Login · ACC Manager{% endblock %}
 {% block base %}
 
-    <style>
-    /* Add some padding inside the card container */
-    .container {
-        padding: 20px 16px;
-    }
-    </style>
-
-
-    {% load django_bootstrap5 %}
-    {% bootstrap_css %}
-    {% bootstrap_javascript %}
-    <div class="container">
-        <div class="card">
+<div class="login-stage">
+    <div class="login-card">
+        <div class="login-brand">
+            <div class="brand-mark">ACC <span>Manager</span></div>
+            <p>Sign in to manage servers, configs, and sessions.</p>
+        </div>
+        <div class="login-body">
+            {% load django_bootstrap5 %}
             <form action="{{ app_path }}" method="post" id="login-form">{% csrf_token %}
-                {% if 'username' in form.fields %}
                 {% bootstrap_form form %}
-                {% else %}
-                {% bootstrap_form form %}
-                {% endif %}
-                <div class="action right-align">
-                    <button type="submit" class="btn btn-primary">Login</button>
-                </div>
+                <button type="submit" class="btn btn-primary mt-2">Login</button>
             </form>
         </div>
     </div>
+</div>
+
 {% endblock %}
-
-

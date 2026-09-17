@@ -1,32 +1,43 @@
 {% extends "base.html" %}
 {% block base %}
 
-    {% if user.is_authenticated %}
+{% if user.is_authenticated %}
+<div class="app-shell">
     <header>
-        <nav class="navbar navbar-expand-lg navbar-dark">
-            <div class="container-fluid">
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
-                    <div class="navbar-nav">
-                        <a class="nav-link" style="font-size:20px; font-weight: bold;" href="/cfgs">Configs</a>
-                        <a class="nav-link" style="font-size:20px; font-weight: bold;" href="/instances">Instances</a>
-                        <a class="nav-link" style="font-size:20px; font-weight: bold;" href="{% url 'logout' %}">Logout</a>
-                    </div>
-                </div>
-            </div>
+        <nav class="app-nav">
+            <a class="brand" href="/instances">
+                <span class="brand-mark">ACC <span>Manager</span></span>
+                <span class="brand-sub">Race control</span>
+            </a>
+            <ul class="nav-links">
+                <li><a href="/cfgs" class="{% if '/cfgs' in request.path %}is-active{% endif %}">Configs</a></li>
+                <li><a href="/instances" class="{% if '/instances' in request.path %}is-active{% endif %}">Instances</a></li>
+                <li><a href="{% url 'logout' %}">Logout</a></li>
+            </ul>
         </nav>
     </header>
 
-    <div id="content">
-        {% block content %}
-        {% endblock %}
-    </div>
+    <main id="content">
+        {% block content %}{% endblock %}
+    </main>
 
-    {% else %}
-    <p>You are not logged in</p>
-    <a href="{% url 'login' %}">login</a>
-    {% endif %}
+    <footer class="app-footer">
+        ACC Server Manager · <a href="https://github.com/gotzl/accservermanager">GitHub</a>
+    </footer>
+</div>
+{% else %}
+<div class="login-stage">
+    <div class="login-card">
+        <div class="login-brand">
+            <div class="brand-mark">ACC <span>Manager</span></div>
+            <p>Sign in to manage servers, configs, and sessions.</p>
+        </div>
+        <div class="login-body">
+            <p>You are not logged in.</p>
+            <a class="btn btn-primary" href="{% url 'login' %}">Login</a>
+        </div>
+    </div>
+</div>
+{% endif %}
 
 {% endblock %}

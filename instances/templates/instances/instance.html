@@ -1,11 +1,6 @@
 {% extends "main.html" %}
+{% block title %}{{ name }} · ACC Manager{% endblock %}
 {% block content %}
-
-<style>
-.container {
-    padding: 20px 16px;
-}
-</style>
 
 {% load django_bootstrap_breadcrumbs %}
 {% block breadcrumbs %}
@@ -15,33 +10,99 @@
 {% endfor %}
 {% endblock %}
 
-<div class="container">
-    <div class="card"  style="padding: 16px 16px 0px 16px;">
-        <a href="results"><input value="Results" class="btn green"></a>
+<div class="breadcrumb-wrap">{% render_breadcrumbs %}</div>
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">{{ name }}</h1>
+        <p class="page-lead" style="display:flex; flex-wrap:wrap; gap:.65rem; align-items:center; margin-top:.5rem;">
+            {% if executor.is_alive %}
+                <span class="status-pill live"><span class="dot"></span> Running · PID {{ executor.p.pid }}</span>
+            {% else %}
+                <span class="status-pill dead"><span class="dot"></span> Stopped{% if executor.retval != None %} · exit {{ executor.retval }}{% endif %}</span>
+            {% endif %}
+            <span class="mono">UDP {{ executor.udpPort }}</span>
+            <span class="mono">TCP {{ executor.tcpPort }}</span>
+            <span class="mono">{{ executor.config }}</span>
+        </p>
     </div>
-    <div class="card" style="padding: 10px 16px 20px 16px;">
-        {% render_breadcrumbs %}
-
-        {% for r in resources %}
-            <h6 style="font-weight:bold">{{r.label}} | <a href="{{request.path}}{{r.path}}">{{r.text}}</a> </h6>
-            <textarea id="{{r.path}}" style="height: 200px;" disabled></textarea>
-            <script>
-                (function {{r.path}}() {
-                    $.post(
-                        '{{request.path}}{{r.path}}',
-                        {% if r.update %} { lines: 10 } {% else %} { } {% endif %}
-                    ).done(function(data) {
-                        if (typeof data !== "string") data = JSON.stringify(data, null, 4);
-                        $('textarea#{{r.path}}').val(data);
-                        {% if r.update %} setTimeout({{r.path}}, 2000); {% endif %}
-                    });
-                })();
-            </script>
-        {% endfor %}
-
+    <div class="page-actions">
+        <a href="/instances/{{ name }}/results/" class="btn btn-primary btn-sm">Results</a>
+        <a href="/instances/{{ name }}/edit" class="btn btn-outline-secondary btn-sm">Edit</a>
+        <a href="/instances" class="btn btn-outline-secondary btn-sm">Back</a>
     </div>
-
 </div>
 
+<div class="panel">
+    <div class="panel-head">
+        <h2>Live logs</h2>
+        <small class="text-muted">Auto-refresh every 2s</small>
+    </div>
+    <ul class="nav nav-tabs" id="logTabs" role="tablist">
+        {% for r in live %}
+        <li class="nav-item" role="presentation">
+            <button class="nav-link{% if forloop.first %} active{% endif %}"
+                    id="tab-{{ r.path }}"
+                    data-bs-toggle="tab"
+                    data-bs-target="#pane-{{ r.path }}"
+                    type="button"
+                    role="tab">{{ r.label }}</button>
+        </li>
+        {% endfor %}
+    </ul>
+    <div class="tab-content">
+        {% for r in live %}
+        <div class="tab-pane fade{% if forloop.first %} show active{% endif %}"
+             id="pane-{{ r.path }}"
+             role="tabpanel">
+            <div class="panel-head" style="border:none; background:#161a20; color:#8b93a0;">
+                <span style="font-size:.75rem;">{{ r.label }}</span>
+                <a href="{{ request.path }}{{ r.path }}" style="color:#9cdcfe; font-size:.75rem;">Download full</a>
+            </div>
+            <textarea id="{{ r.path }}" class="log-view" readonly spellcheck="false"></textarea>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<div class="panel">
+    <div class="panel-head">
+        <h2>Configuration files</h2>
+    </div>
+    <div class="cfg-grid">
+        {% for r in configs %}
+        <div class="cfg-card">
+            <div class="cfg-head">
+                <span>{{ r.label }}</span>
+                <a href="{{ request.path }}{{ r.path }}">{{ r.text }}</a>
+            </div>
+            <textarea id="{{ r.path }}" class="log-view" style="min-height:180px; max-height:260px;" readonly spellcheck="false"></textarea>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+{% for r in live %}
+(function {{ r.path }}() {
+    $.post('{{ request.path }}{{ r.path }}', { lines: 40 }).done(function(data) {
+        if (typeof data !== "string") data = JSON.stringify(data, null, 4);
+        var el = document.getElementById('{{ r.path }}');
+        var atBottom = el.scrollTop + el.clientHeight >= el.scrollHeight - 20;
+        el.value = data;
+        if (atBottom) el.scrollTop = el.scrollHeight;
+        setTimeout({{ r.path }}, 2000);
+    });
+})();
+{% endfor %}
+{% for r in configs %}
+(function () {
+    $.post('{{ request.path }}{{ r.path }}', {}).done(function(data) {
+        if (typeof data !== "string") data = JSON.stringify(data, null, 4);
+        document.getElementById('{{ r.path }}').value = data;
+    });
+})();
+{% endfor %}
+</script>
 
 {% endblock %}
