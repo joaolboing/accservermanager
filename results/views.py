@@ -88,7 +88,10 @@ def results(request, *args, **kwargs):
 
     context = {
         'path': [(j, '/'+'/'.join(path[:i+1])) for i,j in enumerate(path)],
-        'table': LeaderBoard(results['sessionResult']['leaderBoardLines'])
+        'table': LeaderBoard(results['sessionResult']['leaderBoardLines']),
+        'instance': kwargs['instance'],
+        'title': args[0] if args else 'Result',
+        'is_detail': True,
     }
     return render(request, 'results/results.html', context)
 
@@ -133,5 +136,8 @@ def resultSelect(request, instance):
     context = {
         'path' : [(j, '/'+'/'.join(path[:i+1])) for i,j in enumerate(path)],
         'table' : table,
+        'instance': instance,
+        'title': 'Results',
+        'is_detail': False,
     }
     return render(request, 'results/results.html', context)

@@ -1,130 +1,185 @@
 {% extends "main.html" %}
+{% block title %}Instances · ACC Manager{% endblock %}
 {% block content %}
 
-<style>
-    .container {
-        padding: 20px 16px;
-    }
-</style>
-
-
-<div class="container">
-    <div class="card">
-        <h5 style="font-weight:bold">Server instances</h5><br>
-        <table>
-            <tr><td>Instance Name</td><td>Server Name</td><td>Config</td><td>UDP</td><td>TCP</td><td>PID</td><td></td></tr>
-            {% for name,executor in executors.items %}
-            <tr id="row{{forloop.counter0}}">
-                <td><a href="/instances/{{name}}" class="btn blue">{{name}}</a></td>
-                <td style="">{{executor.serverName}}</td>
-                <td style="">{{executor.config}}</td>
-                <td style="">{{executor.udpPort}}</td>
-                <td style="">{{executor.tcpPort}}</td>
-
-                <td id="pid{{forloop.counter0}}" style="">
-                    {% if executor.is_alive %}
-                        {{executor.p.pid}}
-                    {% else %}
-                        exited with {{executor.retval}}
-                    {% endif %}
-                </td>
-                {% if executor.is_alive %}
-                <td>
-                    <button id="stop{{forloop.counter0}}" class="btn red" onclick="stop(this, '{{name}}')">Stop</button>
-                </td><td></td>
-                {% else %}
-                <td>
-                    <button id="restart{{forloop.counter0}}" class="btn green" onclick="start(this, '{{name}}')">Start</button>
-                </td><td>
-                    <button id="delete{{forloop.counter0}}" class="btn red" onclick="del(this, '{{name}}')">Delete</button>
-                </td>
-                {% endif %}
-            </tr>
-            {% endfor %}
-        </table>
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Instances</h1>
+        <p class="page-lead">Start, stop, and configure ACC server processes.</p>
     </div>
 </div>
 
-<div class="container">
-    {% if messages %}
-        {% for message in messages %}
-            <div {% if message.level == DEFAULT_MESSAGE_LEVELS.ERROR %}
-                        class="card red"
-                 {% else %}  class="card green"
-                 {% endif %}>
-                <div id="message" {% if message.tags %} class="{{ message.tags }}" {% endif %} style="padding: 10px 5px;">
-                    <strong>{{ message|escape }}</strong>
+{% if messages %}
+    {% for message in messages %}
+        <div id="message" class="flash {% if message.level == DEFAULT_MESSAGE_LEVELS.ERROR %}flash-err{% elif 'warning' in message.tags %}flash-warn{% else %}flash-ok{% endif %}">
+            <strong>{{ message|escape }}</strong>
+        </div>
+    {% endfor %}
+{% endif %}
+
+<div class="panel">
+    <div class="panel-head">
+        <h2>Running fleet</h2>
+        <span class="text-muted" style="font-size:.8rem;">{{ executors|length }} instance{{ executors|length|pluralize }}</span>
+    </div>
+    <div class="panel-body" style="padding:0; overflow-x:auto;">
+        {% if executors %}
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Instance</th>
+                    <th>Server</th>
+                    <th>Event</th>
+                    <th>UDP</th>
+                    <th>TCP</th>
+                    <th>Status</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for name,executor in executors.items %}
+                <tr id="row{{forloop.counter0}}">
+                    <td>
+                        <a href="/instances/{{name}}" style="font-weight:700; text-decoration:none; color:var(--ink);">{{name}}</a>
+                    </td>
+                    <td>{{executor.serverName}}</td>
+                    <td class="mono">{{executor.config}}</td>
+                    <td class="mono">{{executor.udpPort}}</td>
+                    <td class="mono">{{executor.tcpPort}}</td>
+                    <td id="pid{{forloop.counter0}}">
+                        {% if executor.is_alive %}
+                            <span class="status-pill live"><span class="dot"></span> PID {{executor.p.pid}}</span>
+                        {% else %}
+                            <span class="status-pill dead"><span class="dot"></span> exit {{executor.retval}}</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="row-actions">
+                        {% if executor.is_alive %}
+                            <button id="stop{{forloop.counter0}}" class="btn btn-danger btn-sm" onclick="stop(this, '{{name}}')">Stop</button>
+                            <a href="/instances/{{name}}/edit" class="btn btn-outline-secondary btn-sm">Edit</a>
+                        {% else %}
+                            <button id="restart{{forloop.counter0}}" class="btn btn-success btn-sm" onclick="start(this, '{{name}}')">Start</button>
+                            <a href="/instances/{{name}}/edit" class="btn btn-outline-secondary btn-sm">Edit</a>
+                            <button id="delete{{forloop.counter0}}" class="btn btn-outline-secondary btn-sm" onclick="del(this, '{{name}}')">Delete</button>
+                        {% endif %}
+                        </div>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="panel-body">
+            <p class="page-lead" style="margin:0;">No instances yet. Create one below.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="panel">
+    <div class="panel-head">
+        <h2>Create instance</h2>
+    </div>
+    <div class="panel-body">
+        <form name="instance_form" action="start" method="POST"
+              onsubmit="return (document.forms['instance_form']['event'].value.length>0)">{% csrf_token %}
+            {% load django_bootstrap5 %}
+            {% bootstrap_form form %}
+            <div class="accordion mb-3" id="instanceConfigAccordion">
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="headingSettings">
+                        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSettings" aria-expanded="true" aria-controls="collapseSettings">
+                            Settings
+                        </button>
+                    </h2>
+                    <div id="collapseSettings" class="accordion-collapse collapse show" aria-labelledby="headingSettings" data-bs-parent="#instanceConfigAccordion">
+                        <div class="accordion-body">
+                            {% bootstrap_form form.settings %}
+                        </div>
+                    </div>
+                </div>
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="headingConfiguration">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseConfiguration" aria-expanded="false" aria-controls="collapseConfiguration">
+                            Configuration
+                        </button>
+                    </h2>
+                    <div id="collapseConfiguration" class="accordion-collapse collapse" aria-labelledby="headingConfiguration" data-bs-parent="#instanceConfigAccordion">
+                        <div class="accordion-body">
+                            {% bootstrap_form form.configuration %}
+                        </div>
+                    </div>
+                </div>
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="headingAssistRules">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseAssistRules" aria-expanded="false" aria-controls="collapseAssistRules">
+                            Assist rules
+                        </button>
+                    </h2>
+                    <div id="collapseAssistRules" class="accordion-collapse collapse" aria-labelledby="headingAssistRules" data-bs-parent="#instanceConfigAccordion">
+                        <div class="accordion-body">
+                            {% bootstrap_form form.assistRules %}
+                        </div>
+                    </div>
+                </div>
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="headingEventRules">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseEventRules" aria-expanded="false" aria-controls="collapseEventRules">
+                            Event rules
+                        </button>
+                    </h2>
+                    <div id="collapseEventRules" class="accordion-collapse collapse" aria-labelledby="headingEventRules" data-bs-parent="#instanceConfigAccordion">
+                        <div class="accordion-body">
+                            {% bootstrap_form form.eventRules %}
+                        </div>
+                    </div>
                 </div>
             </div>
-        {% endfor %}
-    {% endif %}
-
-    <div class="card">
-        {% load material_form %}
-        <h5 style="font-weight:bold">Instance config</h5>
-        <form name="instance_form" action="start" method="POST"
-              onsubmit="return (document.forms['instance_form']['cfg'].value.length>0)">{% csrf_token %}
-            {% form form=form %}{% endform %}
-            <ul class="collapsible" data-collapsible="accordion">
-                <li class="active">
-                    <div class="collapsible-header" style="font-weight:bold">Settings</div>
-                    <div class="collapsible-body">
-                        {% form form=form.settings %}{% endform %}
-                    </div>
-                </li>
-                <li>
-                    <div class="collapsible-header" style="font-weight:bold">Configuration</div>
-                    <div class="collapsible-body">
-                        {% form form=form.configuration %}{% endform %}
-                    </div>
-                </li>
-                <li>
-                    <div class="collapsible-header" style="font-weight:bold">AssistRules</div>
-                    <div class="collapsible-body">
-                        {% form form=form.assistRules %}{% endform %}
-                    </div>
-                </li>
-            </ul>
-
-            <button class="btn green" type="submit">Start</button>
+            <button class="btn btn-primary" type="submit">Create &amp; start</button>
         </form>
-
     </div>
 </div>
 
 <script>
-    $('#message').on('click', function(){
-        $(this).parent().remove();
-    });
+    $('#message').on('click', function(){ $(this).remove(); });
 
     function start(el, name) {
-        el.innerHTML  = 'Starting'
+        el.innerHTML = 'Starting…';
         el.disabled = true;
         var delel = $('#delete'+el.id.replace('restart',''))[0];
-        delel.disabled = true;
+        if (delel) delel.disabled = true;
         $.post("/instances/"+name+"/start", function(json) {
-            $('td#pid'+el.id.replace('restart','')).html(json['pid']);
-            delel.id = el.id.replace('restart','stop');
-            delel.innerHTML = 'Stop';
-            delel.onclick = function() {stop(el, name)};
-            delel.disabled = false;
+            $('td#pid'+el.id.replace('restart','')).html(
+                '<span class="status-pill live"><span class="dot"></span> PID '+json['pid']+'</span>'
+            );
+            if (delel) {
+                delel.id = el.id.replace('restart','stop');
+                delel.innerHTML = 'Stop';
+                delel.className = 'btn btn-danger btn-sm';
+                delel.onclick = function() { stop(delel, name); };
+                delel.disabled = false;
+            }
             el.remove();
         });
     }
     function stop(el, name) {
-        el.innerHTML  = 'Stopping'
+        el.innerHTML = 'Stopping…';
         el.disabled = true;
         $.post("/instances/"+name+"/stop", function(json) {
-            $('td#pid'+el.id.replace('stop','')).html('exited with '+json['retval']);
-            el.id = el.id.replace('stop','delete')
+            $('td#pid'+el.id.replace('stop','')).html(
+                '<span class="status-pill dead"><span class="dot"></span> exit '+json['retval']+'</span>'
+            );
+            el.id = el.id.replace('stop','delete');
             el.innerHTML = 'Delete';
-            el.onclick = function() {del(el, name)};
+            el.className = 'btn btn-outline-secondary btn-sm';
+            el.onclick = function() { del(el, name); };
             el.disabled = false;
         });
     }
     function del(el, name) {
         el.disabled = true;
-        $.post("/instances/"+name+"/delete", function(json) {
+        $.post("/instances/"+name+"/delete", function() {
             $('tr#row'+el.id.replace('delete','')).remove();
         });
     }

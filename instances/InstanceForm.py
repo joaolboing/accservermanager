@@ -114,7 +114,10 @@ class InstanceForm(forms.Form):
         # There is an issue with the 'required' error, so set this field
         # to not-required. This is ok, since it is always pre-filled.
         # This field has to be instantiated here in order to pick-up new configs.
-        self.fields['event'] = getCfgsField(label='Event', required=False)
+        selected = None
+        if data is not None:
+            selected = data.get('event') if hasattr(data, 'get') else None
+        self.fields['event'] = getCfgsField(label='Event', required=False, selected=selected)
 
     def is_valid(self):
         return self.settings.is_valid() and self.configuration.is_valid() and self.assistRules.is_valid() and self.eventRules.is_valid()

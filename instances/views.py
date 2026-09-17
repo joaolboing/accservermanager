@@ -7,6 +7,8 @@ from django.contrib import messages
 
 from random_word import RandomWords
 
+from pathlib import Path
+
 from instances.Executor import Executor
 from instances.InstanceForm import InstanceForm
 
@@ -30,6 +32,7 @@ resources = [
     ('event',  "event.json", "Download"),
     ('settings',  "settings.json", "Download"),
     ('assistRules',  "assistRules.json", "Download"),
+    ('eventRules',  "eventRules.json", "Download"),
 ]
 
 @login_required
@@ -42,8 +45,17 @@ def instance(request, name):
     if path[-1] == '/':path = path[:-1]
     path = path.split('/')
 
+    live = [dict(path=r[0], label=r[1], text=r[2], update=True)
+            for r in resources if r[0] in ('stdout', 'stderr', 'serverlog')]
+    configs = [dict(path=r[0], label=r[1], text=r[2], update=False)
+               for r in resources if r[0] not in ('stdout', 'stderr', 'serverlog')]
+
     return HttpResponse(template.render(
-        {'path' : [(j, '/'+'/'.join(path[:i+1])) for i,j in enumerate(path)],
+        {'path': [(j, '/'+'/'.join(path[:i+1])) for i,j in enumerate(path)],
+         'name': name,
+         'executor': executors[name],
+         'live': live,
+         'configs': configs,
          'resources': [dict(path=r[0], label=r[1], text=r[2], update=r[0] in ['stdout','stderr','serverlog']) for r in resources]},
         request))
 
@@ -90,6 +102,12 @@ def download_settings_file(request, name):
 @login_required
 def download_assistRules_file(request, name):
     f = os.path.join(settings.INSTANCES, name, 'cfg', 'assistRules.json')
+    return download(f, content_type='text/json')
+
+
+@login_required
+def download_eventRules_file(request, name):
+    f = os.path.join(settings.INSTANCES, name, 'cfg', 'eventRules.json')
     return download(f, content_type='text/json')
 
 
@@ -189,9 +207,40 @@ def render_from(request, form):
     return HttpResponse(template.render(context, request))
 
 
+def _load_utf16_json(path, default=None):
+    if default is None:
+        default = {}
+    if not os.path.isfile(path):
+        return dict(default)
+    with open(path, 'r', encoding='utf-16') as fh:
+        return json.load(fh)
+
+
+def load_instance_cfg(inst_dir):
+    """Merge instance cfg/*.json into a dict suitable for InstanceForm."""
+    cfg = {}
+    for fname in ('configuration.json', 'settings.json', 'assistRules.json', 'eventRules.json'):
+        cfg.update(_load_utf16_json(os.path.join(inst_dir, 'cfg', fname)))
+
+    cfg['instanceName'] = os.path.basename(inst_dir.rstrip(os.sep))
+
+    event_path = os.path.join(inst_dir, 'cfg', 'event.json')
+    if os.path.exists(event_path):
+        cfg['event'] = os.path.splitext(Path(event_path).resolve().name)[0]
+
+    return cfg
+
+
 def write_config(name, inst_dir, form):
-    ### use the values of the default *.json as basis
-    cfg = json.load(open(os.path.join(settings.ACCSERVER, 'cfg', name), 'r', encoding='utf-16'))
+    """Write a cfg json using ACCSERVER defaults, else existing instance file, else {}."""
+    base = os.path.join(settings.ACCSERVER, 'cfg', name)
+    inst = os.path.join(inst_dir, 'cfg', name)
+    if os.path.isfile(base):
+        cfg = _load_utf16_json(base)
+    elif os.path.isfile(inst):
+        cfg = _load_utf16_json(inst)
+    else:
+        cfg = {}
 
     for key in form.cleaned_data.keys():
         if key == 'csrfmiddlewaretoken': continue
@@ -199,8 +248,84 @@ def write_config(name, inst_dir, form):
         if isinstance(value, bool): value = int(value)
         if value is not None: cfg[key] = value
 
-    # write the file into the instances' directory
-    json.dump(cfg, open(os.path.join(inst_dir, 'cfg', name), 'w', encoding='utf-16'))
+    with open(inst, 'w', encoding='utf-16') as fh:
+        json.dump(cfg, fh)
+
+
+def set_event_symlink(inst_dir, event_name):
+    cfg = os.path.join(settings.CONFIGS, event_name + '.json')
+    link = os.path.join(inst_dir, 'cfg', 'event.json')
+    if os.path.lexists(link):
+        os.remove(link)
+    os.symlink(cfg, link)
+
+
+def _render_edit(request, form, name):
+    template = loader.get_template('instances/instance_edit.html')
+    return HttpResponse(template.render(
+        {'form': form, 'name': name,
+         'running': name in executors and executors[name].is_alive()},
+        request))
+
+
+@login_required
+def edit(request, name):
+    """Edit an existing instance configuration."""
+    inst_dir = os.path.join(settings.INSTANCES, name)
+    if not os.path.isdir(inst_dir):
+        messages.error(request, "Instance not found")
+        return HttpResponseRedirect('/instances')
+
+    if request.method != 'POST':
+        form = InstanceForm(load_instance_cfg(inst_dir))
+        form.fields['instanceName'].widget.attrs['readonly'] = True
+        return _render_edit(request, form, name)
+
+    form = InstanceForm(request.POST)
+    form.fields['instanceName'].widget.attrs['readonly'] = True
+
+    if not form.is_valid():
+        messages.error(request, "Form is not valid")
+        return _render_edit(request, form, name)
+
+    udp = form.configuration['udpPort'].value()
+    tcp = form.configuration['tcpPort'].value()
+
+    if not settings.ALLOW_SAME_PORTS and udp == tcp:
+        messages.error(request, 'UDP and TCP port have to be different')
+        return _render_edit(request, form, name)
+
+    conflict = [x for key, x in executors.items()
+                if key != name and x.is_alive()
+                and (udp in [x.udpPort, x.tcpPort] or tcp in [x.udpPort, x.tcpPort])]
+    if conflict:
+        messages.error(request, "The ports are already in use")
+        return _render_edit(request, form, name)
+
+    event_name = form['event'].value()
+    if not event_name:
+        messages.error(request, "Event config is required")
+        return _render_edit(request, form, name)
+
+    set_event_symlink(inst_dir, event_name)
+    write_config('configuration.json', inst_dir, form.configuration)
+    write_config('settings.json', inst_dir, form.settings)
+    write_config('assistRules.json', inst_dir, form.assistRules)
+    write_config('eventRules.json', inst_dir, form.eventRules)
+
+    running = name in executors and executors[name].is_alive()
+    if running:
+        for key, val in load_instance_cfg(inst_dir).items():
+            if key in ('instanceName', 'event'):
+                continue
+            setattr(executors[name], key, val)
+        executors[name].config = event_name + '.json'
+        messages.warning(request, "Saved. Restart the instance for changes to take effect.")
+    else:
+        executors[name] = Executor(inst_dir)
+        messages.info(request, "Instance updated")
+
+    return HttpResponseRedirect('/instances')
 
 
 @login_required
@@ -252,15 +377,14 @@ def create(request):
     os.remove(os.path.join(inst_dir, 'accServer.exe'))
     os.symlink(os.path.join(settings.ACCSERVER, 'accServer.exe'), os.path.join(inst_dir, 'accServer.exe'))
 
-    # the target configuration
-    cfg = os.path.join(settings.CONFIGS, form['event'].value() + '.json')
     # link the requested config into the instance environment
-    os.symlink(cfg, os.path.join(inst_dir, 'cfg', 'event.json'))
+    set_event_symlink(inst_dir, form['event'].value())
 
     # write the json files
     write_config('configuration.json', inst_dir, form.configuration)
     write_config('settings.json', inst_dir, form.settings)
     write_config('assistRules.json', inst_dir, form.assistRules)
+    write_config('eventRules.json', inst_dir, form.eventRules)
 
     # start the instance
     start(request, name)
@@ -295,7 +419,7 @@ def index(request):
     cfg['dumpLeaderboards'] = 1
     cfg['registerToLobby'] = 1
     cfg['dumpLeaderboards'] = 1
-    cfg['ignorePrematureDisconnects'] = 1
+    cfg['ignorePrematureDisconnects'] = 0
     cfg['formationLapType'] = 3
 
     # overwrite nonsense trackMedalsRequirement default value

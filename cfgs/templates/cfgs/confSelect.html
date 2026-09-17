@@ -1,87 +1,101 @@
 {% extends "main.html" %}
+{% block title %}Configs · ACC Manager{% endblock %}
 {% block content %}
 
-<style>
-    tr:hover {
-      background-color: #d3d3d3;
-    }
-    .container {
-        padding: 20px 16px;
-    }
-</style>
-
-
-{% load material_form %}
-
-<div class="container">
-    <div class="card">
-        <h6 style="font-weight:bold">Existing configs</h6>
-        <table>
-            <tr><td style="font-weight:bold">Name</td><td style="font-weight:bold">Actions</td><td></td><td></td></tr>
-            {% for cfg in cfgs %}
-            <tr>
-                <td style="width: 200px">
-                    <form id="cfgform{{forloop.counter0}}" style="margin: 0" action="/cfgs/rename" method="post">{% csrf_token %}
-                        <input hidden name="cfg" value="{{cfg}}">
-                        <i id="rename{{forloop.counter0}}" type="button"
-                           style="vertical-align: middle; color: blue"
-                           title="Rename" class="material-icons">edit</i>
-                        <input id="cfgname{{forloop.counter0}}" name="cfgname"
-                               oldvalue={{cfg}} value={{cfg}} style="width: 150px" readonly>
-                    </form>
-                </td>
-                <td>
-                    <form style="margin: 0" action="/cfgs/clone" method="post">{% csrf_token %}
-                        <input hidden name="cfg" value="{{cfg}}">
-                        <a href="/cfgs/{{cfg}}" class="btn blue">Edit</a>
-                    </form>
-                </td>
-                <td>
-                    <form style="margin: 0" action="/cfgs/clone" method="post">{% csrf_token %}
-                        <input hidden name="cfg" value="{{cfg}}">
-                        <input type="submit" value="Clone" class="btn green">
-                    </form>
-                </td>
-                <td>
-                    <form style="margin: 0" action="/cfgs/delete" method="post">{% csrf_token %}
-                        <input hidden name="cfg" value="{{cfg}}">
-                        <input type="submit" value="Delete" class="btn red">
-                    </form>
-                </td>
-            </tr>
-            <script>
-                $("#rename{{forloop.counter0}}").click(function (){
-                    var cfg = $("#cfgname{{forloop.counter0}}");
-                    var ro  = cfg.prop('readonly');
-                    cfg.prop('readonly', !ro);
-                    if (ro) {
-                        $(this).css('color','red');
-                        cfg.prop('oldvalue', cfg.val());
-                        cfg.prop('type', 'text');
-                        cfg.focus()
-                    } else {
-                        $(this).css('color','blue');
-                        if (cfg.prop('oldvalue') != cfg.val()) {
-                            $("#cfgform{{forloop.counter0}}").submit();
-                        }
-                    }
-                })
-            </script>
-            {% endfor %}
-        </table>
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Configs</h1>
+        <p class="page-lead">Event configurations linked into server instances.</p>
     </div>
 </div>
 
-<div class="container">
-    <div class="card">
-        <h6 style="font-weight:bold">Create new config</h6>
-        <form action="/cfgs/create" method="post">
+<div class="panel">
+    <div class="panel-head">
+        <h2>Existing configs</h2>
+        <span class="text-muted" style="font-size:.8rem;">{{ cfgs|length }} file{{ cfgs|length|pluralize }}</span>
+    </div>
+    <div class="panel-body" style="padding:0; overflow-x:auto;">
+        {% if cfgs %}
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for cfg in cfgs %}
+                <tr>
+                    <td style="min-width: 220px;">
+                        <form id="cfgform{{forloop.counter0}}" style="margin:0; display:flex; align-items:center; gap:.4rem;" action="/cfgs/rename" method="post">{% csrf_token %}
+                            <input hidden name="cfg" value="{{cfg}}">
+                            <i id="rename{{forloop.counter0}}"
+                               style="cursor:pointer; color:var(--signal); font-size:1.1rem;"
+                               title="Rename" class="material-icons">edit</i>
+                            <input id="cfgname{{forloop.counter0}}" name="cfgname"
+                                   class="form-control form-control-sm"
+                                   style="max-width:200px; font-weight:600;"
+                                   oldvalue="{{cfg}}" value="{{cfg}}" readonly>
+                        </form>
+                    </td>
+                    <td>
+                        <div class="row-actions">
+                            <a href="/cfgs/{{cfg}}" class="btn btn-primary btn-sm">Edit</a>
+                            <form style="margin:0; display:inline;" action="/cfgs/clone" method="post">{% csrf_token %}
+                                <input hidden name="cfg" value="{{cfg}}">
+                                <button type="submit" class="btn btn-outline-secondary btn-sm">Clone</button>
+                            </form>
+                            <form style="margin:0; display:inline;" action="/cfgs/delete" method="post">{% csrf_token %}
+                                <input hidden name="cfg" value="{{cfg}}">
+                                <button type="submit" class="btn btn-outline-secondary btn-sm">Delete</button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                <script>
+                    $("#rename{{forloop.counter0}}").click(function (){
+                        var cfg = $("#cfgname{{forloop.counter0}}");
+                        var ro  = cfg.prop('readonly');
+                        cfg.prop('readonly', !ro);
+                        if (ro) {
+                            $(this).css('color','var(--warn)');
+                            cfg.prop('oldvalue', cfg.val());
+                            cfg.focus();
+                        } else {
+                            $(this).css('color','var(--signal)');
+                            if (cfg.prop('oldvalue') != cfg.val()) {
+                                $("#cfgform{{forloop.counter0}}").submit();
+                            }
+                        }
+                    });
+                </script>
+            {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="panel-body">
+            <p class="page-lead" style="margin:0;">No configs yet. Create one below.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="panel">
+    <div class="panel-head">
+        <h2>Create config</h2>
+    </div>
+    <div class="panel-body">
+        {% load django_bootstrap5 %}
+        <form action="/cfgs/create" method="post" class="row g-2 align-items-end">
             {% csrf_token %}
-            {% form form=form %}{% endform %}
-            <input type="submit" value="Create" class="btn green">
+            <div class="col-md-8">
+                {% bootstrap_form form %}
+            </div>
+            <div class="col-md-4">
+                <button type="submit" class="btn btn-primary w-100">Create</button>
+            </div>
         </form>
     </div>
 </div>
-
 
 {% endblock %}

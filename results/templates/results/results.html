@@ -1,11 +1,6 @@
 {% extends "main.html" %}
+{% block title %}{{ title }} · ACC Manager{% endblock %}
 {% block content %}
-
-<style>
-    .container {
-        padding: 20px 16px;
-    }
-</style>
 
 {% load django_bootstrap_breadcrumbs %}
 {% block breadcrumbs %}
@@ -15,16 +10,46 @@
 {% endfor %}
 {% endblock %}
 
-{% load django_bootstrap5 %}
-{% bootstrap_css %}
-{% bootstrap_javascript %}
+<div class="breadcrumb-wrap">{% render_breadcrumbs %}</div>
 
-<div class="container">
-    <div class="card">
-        {% render_breadcrumbs %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">{{ title }}</h1>
+        <p class="page-lead">{% if is_detail %}Session leaderboard{% else %}Session results for this instance{% endif %}</p>
+    </div>
+    <div class="page-actions">
+        {% if is_detail %}
+        <a href="/instances/{{ instance }}/results/" class="btn btn-outline-secondary btn-sm">Back to results</a>
+        {% else %}
+        <a href="/instances/{{ instance }}/" class="btn btn-outline-secondary btn-sm">Back to instance</a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="panel">
+    <div class="panel-head">
+        <h2>{% if is_detail %}Leaderboard{% else %}Sessions{% endif %}</h2>
+    </div>
+    <div class="panel-body" style="overflow-x:auto; padding-top:.5rem;">
         {% load django_tables2 %}
         {% render_table table %}
     </div>
 </div>
+
+<style>
+    .panel-body table {
+        width: 100%;
+        font-size: .92rem;
+    }
+    .panel-body thead th {
+        font-size: .72rem;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--ink-muted);
+        background: #fafafb;
+        white-space: nowrap;
+    }
+    .panel-body tbody tr:hover { background: #f7f8fb; }
+</style>
 
 {% endblock %}
