@@ -1,6 +1,9 @@
 {% extends "main.html" %}
 {% block title %}Instances · ACC Manager{% endblock %}
 {% block content %}
+{% load role_tags %}
+{% can_manage as is_admin %}
+{% can_edit as has_edit %}
 
 <div class="page-header">
     <div>
@@ -56,12 +59,22 @@
                     <td>
                         <div class="row-actions">
                         {% if executor.is_alive %}
+                            {% if has_edit %}
                             <button id="stop{{forloop.counter0}}" class="btn btn-danger btn-sm" onclick="stop(this, '{{name}}')">Stop</button>
+                            {% endif %}
+                            {% if has_edit %}
                             <a href="/instances/{{name}}/edit" class="btn btn-outline-secondary btn-sm">Edit</a>
+                            {% endif %}
                         {% else %}
+                            {% if has_edit %}
                             <button id="restart{{forloop.counter0}}" class="btn btn-success btn-sm" onclick="start(this, '{{name}}')">Start</button>
+                            {% endif %}
+                            {% if has_edit %}
                             <a href="/instances/{{name}}/edit" class="btn btn-outline-secondary btn-sm">Edit</a>
+                            {% endif %}
+                            {% if is_admin %}
                             <button id="delete{{forloop.counter0}}" class="btn btn-outline-secondary btn-sm" onclick="del(this, '{{name}}')">Delete</button>
+                            {% endif %}
                         {% endif %}
                         </div>
                     </td>
@@ -77,6 +90,7 @@
     </div>
 </div>
 
+{% if has_edit %}
 <div class="panel">
     <div class="panel-head">
         <h2>Create instance</h2>
@@ -140,6 +154,7 @@
         </form>
     </div>
 </div>
+{% endif %}
 
 <script>
     $('#message').on('click', function(){ $(this).remove(); });

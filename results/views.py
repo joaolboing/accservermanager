@@ -11,6 +11,8 @@ from django.utils.html import format_html
 from django_tables2 import tables, Column, TemplateColumn, RequestConfig
 
 from accservermanager.settings import CAR_MODEL_TYPES, DATA_DIR
+from core.decorators import role_required
+from results.parser import parse_session_name
 
 
 class LeaderBoard(tables.Table):
@@ -59,15 +61,30 @@ class LeaderBoard(tables.Table):
 
 
 class Results(tables.Table):
-    name = Column()
-    type = Column()
+    display_name = Column(verbose_name="Session")
+    type = Column(verbose_name="Type")
     track = Column()
+    date = Column(verbose_name="Date")
+    time = Column(verbose_name="Time")
     entries = Column()
-    wetSession = Column()
+    wetSession = Column(verbose_name="Wet")
     view = TemplateColumn(template_name='results/table/results_view_column.html')
     download = TemplateColumn(template_name='results/table/results_download_column.html')
     simresults = TemplateColumn(template_name='results/table/results_simresults_column.html')
-    # delete = TemplateColumn(template_name='results/table/results_delete_column.html')
+
+
+class ResultsGlobal(tables.Table):
+    instance = Column(verbose_name="Instance")
+    display_name = Column(verbose_name="Session")
+    type = Column(verbose_name="Type")
+    track = Column()
+    date = Column(verbose_name="Date")
+    time = Column(verbose_name="Time")
+    entries = Column()
+    wetSession = Column(verbose_name="Wet")
+    view = TemplateColumn(template_name='results/table/results_view_column.html')
+    download = TemplateColumn(template_name='results/table/results_download_column.html')
+    simresults = TemplateColumn(template_name='results/table/results_simresults_column.html')
 
 
 def parse_url(args, kwargs):
@@ -78,6 +95,7 @@ def parse_url(args, kwargs):
     return os.path.join(results_path, result+'.json')
 
 
+@role_required('Admin', 'Operator', 'Viewer')
 def results(request, *args, **kwargs):
     """ Read the select results file and display the selected portion of the json object """
     results = json.load(open(parse_url(args, kwargs), 'rb'))
@@ -96,6 +114,7 @@ def results(request, *args, **kwargs):
     return render(request, 'results/results.html', context)
 
 
+@role_required('Admin', 'Operator', 'Viewer')
 def download(request, *args, **kwargs):
     _f = parse_url(args, kwargs)
     print(_f, os.path.basename(_f))
@@ -107,22 +126,26 @@ def download(request, *args, **kwargs):
     raise Http404
 
 
+@role_required('Admin', 'Operator', 'Viewer')
 def resultSelect(request, instance):
     """ Show available results """
     results_path = os.path.join(DATA_DIR, 'instances', instance, 'results')
     files = sorted(glob.glob('%s/*.json'%(results_path)), reverse=True)
-    files = filter(lambda x: not x.endswith('entrylist.json') , files) 
+    files = filter(lambda x: not x.endswith('entrylist.json') , files)
 
     results = []
     for f in files:
         r = json.load(open(f, 'rb'))
-   
+        parsed = parse_session_name(os.path.splitext(ntpath.basename(f))[0])
         results.append(dict(
             name=os.path.splitext(ntpath.basename(f))[0],
-            type=r['sessionType'], # TODO: decode session type, seems to be borked atm
+            display_name=parsed['display'],
+            date=parsed['date_str'],
+            time=parsed['time_str'],
+            type=r['sessionType'],
             entries=len(r['sessionResult']['leaderBoardLines']),
             wetSession=r['sessionResult']['isWetSession'],
-	        track=r['trackName'],
+            track=r['trackName'],
         ))
 
     path = request.path
@@ -139,5 +162,51 @@ def resultSelect(request, instance):
         'instance': instance,
         'title': 'Results',
         'is_detail': False,
+    }
+    return render(request, 'results/results.html', context)
+
+
+@role_required('Admin', 'Operator', 'Viewer')
+def all_results(request):
+    from accservermanager.settings import DATA_DIR
+    instances_dir = os.path.join(DATA_DIR, 'instances')
+    all_items = []
+    for inst_dir in sorted(glob.glob(os.path.join(instances_dir, '*'))):
+        if not os.path.isdir(inst_dir):
+            continue
+        inst_name = os.path.basename(inst_dir)
+        results_path = os.path.join(inst_dir, 'results')
+        if not os.path.isdir(results_path):
+            continue
+        files = sorted(glob.glob(os.path.join(results_path, '*.json')), reverse=True)
+        files = [f for f in files if not f.endswith('entrylist.json')]
+        for f in files:
+            try:
+                r = json.load(open(f, 'rb'))
+                parsed = parse_session_name(os.path.splitext(ntpath.basename(f))[0])
+                all_items.append(dict(
+                    instance=inst_name,
+                    name=os.path.splitext(ntpath.basename(f))[0],
+                    display_name=parsed['display'],
+                    date=parsed['date_str'],
+                    time=parsed['time_str'],
+                    type=r['sessionType'],
+                    entries=len(r['sessionResult']['leaderBoardLines']),
+                    wetSession=r['sessionResult']['isWetSession'],
+                    track=r['trackName'],
+                ))
+            except (json.JSONDecodeError, KeyError):
+                continue
+
+    all_items.sort(key=lambda x: x.get('name', ''), reverse=True)
+    table = ResultsGlobal(all_items)
+    RequestConfig(request).configure(table)
+    context = {
+        'path': [('Results', '/results/')],
+        'table': table,
+        'instance': None,
+        'title': 'Results',
+        'is_detail': False,
+        'is_global': True,
     }
     return render(request, 'results/results.html', context)

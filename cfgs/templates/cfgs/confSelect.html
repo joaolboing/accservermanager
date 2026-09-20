@@ -1,6 +1,9 @@
 {% extends "main.html" %}
 {% block title %}Configs · ACC Manager{% endblock %}
 {% block content %}
+{% load role_tags %}
+{% can_manage as is_admin %}
+{% can_edit as has_edit %}
 
 <div class="page-header">
     <div>
@@ -29,9 +32,11 @@
                     <td style="min-width: 220px;">
                         <form id="cfgform{{forloop.counter0}}" style="margin:0; display:flex; align-items:center; gap:.4rem;" action="/cfgs/rename" method="post">{% csrf_token %}
                             <input hidden name="cfg" value="{{cfg}}">
+                            {% if is_admin %}
                             <i id="rename{{forloop.counter0}}"
                                style="cursor:pointer; color:var(--signal); font-size:1.1rem;"
                                title="Rename" class="material-icons">edit</i>
+                            {% endif %}
                             <input id="cfgname{{forloop.counter0}}" name="cfgname"
                                    class="form-control form-control-sm"
                                    style="max-width:200px; font-weight:600;"
@@ -41,14 +46,18 @@
                     <td>
                         <div class="row-actions">
                             <a href="/cfgs/{{cfg}}" class="btn btn-primary btn-sm">Edit</a>
+                            {% if has_edit %}
                             <form style="margin:0; display:inline;" action="/cfgs/clone" method="post">{% csrf_token %}
                                 <input hidden name="cfg" value="{{cfg}}">
                                 <button type="submit" class="btn btn-outline-secondary btn-sm">Clone</button>
                             </form>
+                            {% endif %}
+                            {% if is_admin %}
                             <form style="margin:0; display:inline;" action="/cfgs/delete" method="post">{% csrf_token %}
                                 <input hidden name="cfg" value="{{cfg}}">
                                 <button type="submit" class="btn btn-outline-secondary btn-sm">Delete</button>
                             </form>
+                            {% endif %}
                         </div>
                     </td>
                 </tr>
@@ -80,6 +89,7 @@
     </div>
 </div>
 
+{% if has_edit %}
 <div class="panel">
     <div class="panel-head">
         <h2>Create config</h2>
@@ -97,5 +107,6 @@
         </form>
     </div>
 </div>
+{% endif %}
 
 {% endblock %}

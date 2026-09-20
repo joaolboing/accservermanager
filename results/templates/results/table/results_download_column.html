@@ -1,1 +1,1 @@
-<a class="btn btn-outline-secondary btn-sm" href="{{record.name}}.json">Download</a>
+{% if record.instance %}<a class="btn btn-outline-secondary btn-sm" href="/instances/{{record.instance}}/results/{{record.name}}.json">Download</a>{% else %}<a class="btn btn-outline-secondary btn-sm" href="{{record.name}}.json">Download</a>{% endif %}

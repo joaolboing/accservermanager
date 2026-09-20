@@ -1,6 +1,6 @@
 import os, shutil, json, time, string, glob
 
-from django.contrib.auth.decorators import login_required
+from core.decorators import role_required
 from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.template import loader
 from django.contrib import messages
@@ -35,7 +35,7 @@ resources = [
     ('eventRules',  "eventRules.json", "Download"),
 ]
 
-@login_required
+@role_required('Admin', 'Operator')
 def instance(request, name):
     if name not in executors: return HttpResponseRedirect('/instances')
     template = loader.get_template('instances/instance.html')
@@ -60,52 +60,52 @@ def instance(request, name):
         request))
 
 
-@login_required
+@role_required('Admin', 'Operator')
 def stdout(request, name):
     if 'lines' not in request.POST:
         return download(executors[name].stdout)
     return log(executors[name].stdout, int(request.POST['lines']))
 
 
-@login_required
+@role_required('Admin', 'Operator')
 def stderr(request, name):
     if 'lines' not in request.POST:
         return download(executors[name].stderr)
     return log(executors[name].stderr, int(request.POST['lines']))
 
 
-@login_required
+@role_required('Admin', 'Operator')
 def serverlog(request, name):
     if 'lines' not in request.POST:
         return download(executors[name].serverlog)
     return log(executors[name].serverlog, int(request.POST['lines']))
 
 
-@login_required
+@role_required('Admin', 'Operator')
 def download_configuration_file(request, name):
     f = os.path.join(settings.INSTANCES, name, 'cfg', 'configuration.json')
     return download(f, content_type='text/json')
 
 
-@login_required
+@role_required('Admin', 'Operator')
 def download_event_file(request, name):
     f = os.path.join(settings.INSTANCES, name, 'cfg', 'event.json')
     return download(f, content_type='text/json')
 
 
-@login_required
+@role_required('Admin', 'Operator')
 def download_settings_file(request, name):
     f = os.path.join(settings.INSTANCES, name, 'cfg', 'settings.json')
     return download(f, content_type='text/json')
 
 
-@login_required
+@role_required('Admin', 'Operator')
 def download_assistRules_file(request, name):
     f = os.path.join(settings.INSTANCES, name, 'cfg', 'assistRules.json')
     return download(f, content_type='text/json')
 
 
-@login_required
+@role_required('Admin', 'Operator')
 def download_eventRules_file(request, name):
     f = os.path.join(settings.INSTANCES, name, 'cfg', 'eventRules.json')
     return download(f, content_type='text/json')
@@ -143,7 +143,7 @@ def download(_f, content_type="text/plain"):
     raise Http404
 
 
-@login_required
+@role_required('Admin')
 def delete(request, name):
     if name in executors:
         if not executors[name].is_alive():
@@ -154,7 +154,7 @@ def delete(request, name):
                         content_type='application/json')
 
 
-@login_required
+@role_required('Admin', 'Operator')
 def stop(request, name):
     """ handle stop request from client """
     global executors
@@ -172,7 +172,7 @@ def stop(request, name):
                         content_type='application/json')
 
 
-@login_required
+@role_required('Admin', 'Operator')
 def start(request, name):
     """ handle (re)start request from client """
     global executors
@@ -268,7 +268,7 @@ def _render_edit(request, form, name):
         request))
 
 
-@login_required
+@role_required('Admin', 'Operator')
 def edit(request, name):
     """Edit an existing instance configuration."""
     inst_dir = os.path.join(settings.INSTANCES, name)
@@ -328,7 +328,7 @@ def edit(request, name):
     return HttpResponseRedirect('/instances')
 
 
-@login_required
+@role_required('Admin', 'Operator')
 def create(request):
     """ handle create/start request from client """
 
@@ -404,6 +404,7 @@ def random_word():
     return s
 
 
+@role_required('Admin', 'Operator')
 def index(request):
     # read defaults from files
     cfg = json.load(open(os.path.join(

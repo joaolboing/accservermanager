@@ -1,1 +1,1 @@
-<a class="btn btn-primary btn-sm" href="{{record.name}}">View</a>
+{% if record.instance %}<a class="btn btn-primary btn-sm" href="/instances/{{record.instance}}/results/{{record.name}}">View</a>{% else %}<a class="btn btn-primary btn-sm" href="{{record.name}}">View</a>{% endif %}

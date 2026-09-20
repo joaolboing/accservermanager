@@ -27,6 +27,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'core',
     'cfgs',
     'instances',
     'results',
@@ -103,8 +104,8 @@ STATIC_ROOT = os.path.join(BASE_DIR,'static')
 STATIC_URL = '/static/'
 
 
-LOGIN_REDIRECT_URL = '/cfgs'
-LOGOUT_REDIRECT_URL = '/cfgs'
+LOGIN_REDIRECT_URL = '/'
+LOGOUT_REDIRECT_URL = '/'
 
 
 # Quick-start development settings - unsuitable for production

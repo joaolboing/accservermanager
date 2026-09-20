@@ -1,4 +1,4 @@
-from django.contrib.auth.decorators import login_required
+from core.decorators import role_required
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
 
@@ -11,7 +11,7 @@ from cfgs.confEdit import createLabel, createForm
 from cfgs.confSelect import CfgsForm, getCfgs, CfgCreate
 
 
-@login_required
+@role_required('Admin', 'Operator')
 def confCreate(request):
     """ Create a new config based on the backuped origin custom.json """
     _base = os.path.join(settings.ACCSERVER,'cfg','event.json')
@@ -20,7 +20,7 @@ def confCreate(request):
     return HttpResponseRedirect('/cfgs')
 
 
-@login_required
+@role_required('Admin', 'Operator')
 def confClone(request):
     """ Clone a config file """
     _f = os.path.join(settings.CONFIGS, request.POST['cfg']+'.json')
@@ -29,7 +29,7 @@ def confClone(request):
     return HttpResponseRedirect('/cfgs')
 
 
-@login_required
+@role_required('Admin')
 def confRename(request):
     """ Rename a config file """
     _o = request.POST['cfg']
@@ -57,7 +57,7 @@ def confRename(request):
     return HttpResponseRedirect('/cfgs')
 
 
-@login_required
+@role_required('Admin')
 def confDelete(request):
     """ Delete a config file """
     _f = os.path.join(settings.CONFIGS, request.POST['cfg']+'.json')
@@ -72,7 +72,7 @@ def confDelete(request):
     return HttpResponseRedirect('/cfgs')
 
 
-@login_required
+@role_required('Admin', 'Operator')
 def confSelect(request):
     """ Show available configs and form to create a new config """
     context = {
@@ -82,6 +82,7 @@ def confSelect(request):
     return render(request, 'cfgs/confSelect.html', context)
 
 
+@role_required('Admin', 'Operator')
 def formForKey(request, config, *args):
     """ Read the select config file and display the selected portion of the json object """
     cfg_path = os.path.join(settings.CONFIGS, config+'.json')

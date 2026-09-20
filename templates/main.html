@@ -2,16 +2,31 @@
 {% block base %}
 
 {% if user.is_authenticated %}
+{% load role_tags %}
+{% can_edit as has_edit %}
+{% user_is_admin as is_admin %}
+{% user_is_operator as is_operator %}
+{% user_is_viewer as is_viewer %}
 <div class="app-shell">
     <header>
         <nav class="app-nav">
-            <a class="brand" href="/instances">
+            <a class="brand" href="{% if has_edit %}/instances{% else %}/results/{% endif %}">
                 <span class="brand-mark">ACC <span>Manager</span></span>
                 <span class="brand-sub">Race control</span>
             </a>
             <ul class="nav-links">
+                {% if has_edit %}
                 <li><a href="/cfgs" class="{% if '/cfgs' in request.path %}is-active{% endif %}">Configs</a></li>
                 <li><a href="/instances" class="{% if '/instances' in request.path %}is-active{% endif %}">Instances</a></li>
+                {% endif %}
+                <li><a href="/results/" class="{% if '/results' in request.path %}is-active{% endif %}">Results</a></li>
+                {% if is_admin %}
+                <li><span class="status-pill live" style="font-size:.7rem;"><span class="dot"></span> Admin</span></li>
+                {% elif is_operator %}
+                <li><span class="status-pill" style="background:#e8edf4;color:var(--steel);font-size:.7rem;"><span class="dot"></span> Operator</span></li>
+                {% elif is_viewer %}
+                <li><span class="status-pill dead" style="font-size:.7rem;"><span class="dot"></span> Viewer</span></li>
+                {% endif %}
                 <li><a href="{% url 'logout' %}">Logout</a></li>
             </ul>
         </nav>
