@@ -1,0 +1,867 @@
+/* ============================================
+   ACC Server Manager - Unified Styles
+   ============================================ */
+
+/* ============================================
+   1. COMPONENTS - Shared UI Elements
+   ============================================ */
+
+/* Stats Grid */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.stat-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.25rem;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    animation: rise .5s ease both;
+}
+
+.stat-icon {
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    background: var(--paper);
+    color: var(--ink-muted);
+}
+
+.stat-icon .material-icons { font-size: 1.5rem; }
+.stat-icon-live { background: var(--ok-soft); color: var(--ok); }
+.stat-icon-dead { background: var(--dead-soft); color: var(--dead); }
+
+.stat-value {
+    font-family: var(--font-display);
+    font-size: 1.75rem;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.stat-label {
+    font-size: .75rem;
+    color: var(--ink-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-weight: 600;
+}
+
+/* Panel Icons */
+.panel-icon {
+    font-size: 1.25rem;
+    color: var(--signal);
+    margin-right: .5rem;
+    vertical-align: middle;
+}
+
+/* Button Icons */
+.btn-icon {
+    font-size: 1rem;
+    vertical-align: middle;
+    margin-right: .25rem;
+}
+
+/* Empty State */
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem 1rem;
+    text-align: center;
+}
+
+.empty-icon {
+    font-size: 4rem;
+    color: var(--line);
+    margin-bottom: 1rem;
+}
+
+/* Accordion Icons */
+.accordion-icon {
+    font-size: 1.25rem;
+    color: var(--signal);
+    margin-right: .5rem;
+}
+
+/* ============================================
+   2. HEADERS - Page-Specific Headers
+   ============================================ */
+
+/* Session Header (Results Detail) */
+.session-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+    padding: 1.5rem;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    animation: rise .45s ease both;
+}
+
+.session-header-main { flex: 1; min-width: 200px; }
+
+.session-badges {
+    display: flex;
+    gap: .5rem;
+    margin-bottom: .75rem;
+    flex-wrap: wrap;
+}
+
+.session-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: .3rem;
+    padding: .3rem .7rem;
+    border-radius: 4px;
+    font-size: .75rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.session-icon { font-size: 1rem; }
+.session-type-r { background: var(--signal-soft); color: var(--signal-dark); }
+.session-type-q { background: #e8edf4; color: var(--steel); }
+.session-type-p, .session-type-fp { background: var(--ok-soft); color: var(--ok); }
+.session-wet { background: #e3f2fd; color: #1565c0; }
+.session-dry { background: #fff8e1; color: #f57f17; }
+
+.session-track {
+    margin: 0 0 .35rem;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: clamp(1.5rem, 3vw, 2rem);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    line-height: 1.1;
+}
+
+.session-datetime {
+    margin: 0;
+    color: var(--ink-muted);
+    font-size: .9rem;
+    display: flex;
+    align-items: center;
+    gap: .35rem;
+}
+
+.session-datetime-icon { font-size: 1rem; }
+
+.session-best-lap {
+    text-align: right;
+    padding: 1rem 1.25rem;
+    background: linear-gradient(135deg, #f8f0ff, #f3e8ff);
+    border-radius: var(--radius);
+    border: 1px solid #e9d5ff;
+    min-width: 180px;
+}
+
+.best-lap-label {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: .35rem;
+    font-size: .72rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #7c3aed;
+    margin-bottom: .35rem;
+}
+
+.best-lap-time {
+    font-family: var(--font-display);
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #5b21b6;
+    line-height: 1;
+    letter-spacing: -0.02em;
+}
+
+.best-lap-driver {
+    margin-top: .35rem;
+    font-size: .8rem;
+    color: #6b7280;
+    font-weight: 500;
+}
+
+/* Instance Header */
+.instance-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+    padding: 1.5rem;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    animation: rise .45s ease both;
+}
+
+.instance-header-main { flex: 1; min-width: 200px; }
+
+.instance-badges {
+    display: flex;
+    gap: .5rem;
+    margin-bottom: .75rem;
+    flex-wrap: wrap;
+}
+
+.instance-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: .3rem;
+    padding: .3rem .7rem;
+    border-radius: 4px;
+    font-size: .75rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.badge-icon { font-size: 1rem; }
+.instance-badge-live { background: var(--ok-soft); color: var(--ok); }
+.instance-badge-dead { background: var(--dead-soft); color: var(--dead); }
+
+.instance-name {
+    margin: 0 0 .35rem;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: clamp(1.5rem, 3vw, 2rem);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    line-height: 1.1;
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+}
+
+.instance-name-icon {
+    font-size: 1.5rem;
+    color: var(--signal);
+}
+
+.instance-meta {
+    margin: 0;
+    color: var(--ink-muted);
+    font-size: .9rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    align-items: center;
+}
+
+.meta-item {
+    display: flex;
+    align-items: center;
+    gap: .25rem;
+}
+
+.meta-icon { font-size: 1rem; }
+
+.instance-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .5rem;
+}
+
+/* Config Header */
+.config-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+    padding: 1.5rem;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    animation: rise .45s ease both;
+}
+
+.config-header-main { flex: 1; min-width: 200px; }
+
+.config-badges {
+    display: flex;
+    gap: .5rem;
+    margin-bottom: .75rem;
+    flex-wrap: wrap;
+}
+
+.config-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: .3rem;
+    padding: .3rem .7rem;
+    border-radius: 4px;
+    font-size: .75rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    background: var(--paper);
+    color: var(--steel);
+}
+
+.config-name {
+    margin: 0 0 .35rem;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: clamp(1.5rem, 3vw, 2rem);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    line-height: 1.1;
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+}
+
+.config-name-icon {
+    font-size: 1.5rem;
+    color: var(--signal);
+}
+
+.config-lead {
+    margin: 0;
+    color: var(--ink-muted);
+    font-size: .9rem;
+}
+
+.config-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .5rem;
+}
+
+/* Edit Header */
+.edit-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+    padding: 1.5rem;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    animation: rise .45s ease both;
+}
+
+.edit-header-main { flex: 1; min-width: 200px; }
+
+.edit-badges {
+    display: flex;
+    gap: .5rem;
+    margin-bottom: .75rem;
+    flex-wrap: wrap;
+}
+
+.edit-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: .3rem;
+    padding: .3rem .7rem;
+    border-radius: 4px;
+    font-size: .75rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    background: var(--signal-soft);
+    color: var(--signal-dark);
+}
+
+.edit-name {
+    margin: 0 0 .35rem;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: clamp(1.5rem, 3vw, 2rem);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    line-height: 1.1;
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+}
+
+.edit-name-icon {
+    font-size: 1.5rem;
+    color: var(--signal);
+}
+
+.edit-lead {
+    margin: 0;
+    color: var(--ink-muted);
+    font-size: .9rem;
+}
+
+.edit-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .5rem;
+}
+
+/* ============================================
+   3. TABLES - Modern Table Styles
+   ============================================ */
+
+/* Instances Table */
+.instances-table tbody tr {
+    transition: background .2s ease;
+}
+
+.instances-table tbody tr:hover {
+    background: #f7f8fb;
+}
+
+.row-alive { border-left: 3px solid var(--ok); }
+.row-dead { border-left: 3px solid var(--dead); }
+
+.instance-link {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    font-weight: 700;
+    text-decoration: none;
+    color: var(--ink);
+    transition: color .2s ease;
+}
+
+.instance-link:hover { color: var(--signal); }
+
+.instance-icon {
+    font-size: 1.25rem;
+    color: var(--signal);
+}
+
+.server-name {
+    font-weight: 500;
+    color: var(--steel);
+}
+
+.config-badge, .port-badge {
+    display: inline-block;
+    padding: .25rem .5rem;
+    background: var(--paper);
+    border-radius: 4px;
+    font-size: .85rem;
+    font-weight: 600;
+    color: var(--steel);
+}
+
+/* Configs Table */
+.configs-table tbody tr {
+    transition: background .2s ease;
+}
+
+.configs-table tbody tr:hover {
+    background: #f7f8fb;
+}
+
+.cfg-icon {
+    font-size: 1.25rem;
+    color: var(--signal);
+}
+
+.cfg-input {
+    font-weight: 600;
+    border: none !important;
+    background: transparent !important;
+    padding: .25rem .5rem !important;
+}
+
+.cfg-input:focus {
+    background: var(--paper) !important;
+    border: 1px solid var(--signal) !important;
+}
+
+/* Results List Table */
+.results-table tbody tr {
+    transition: background .2s ease;
+}
+
+.results-table tbody tr:hover {
+    background: #f7f8fb;
+}
+
+.session-link {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    font-weight: 700;
+    text-decoration: none;
+    color: var(--ink);
+    transition: color .2s ease;
+}
+
+.session-link:hover { color: var(--signal); }
+
+.session-icon-small {
+    font-size: 1.25rem;
+    color: var(--signal);
+}
+
+.track-name {
+    font-weight: 500;
+    color: var(--steel);
+}
+
+.session-type-badge {
+    display: inline-block;
+    padding: .2rem .5rem;
+    border-radius: 4px;
+    font-size: .7rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.session-type-badge-race { background: var(--signal-soft); color: var(--signal-dark); }
+.session-type-badge-qualify { background: #e8edf4; color: var(--steel); }
+.session-type-badge-practice { background: var(--ok-soft); color: var(--ok); }
+
+.race-day {
+    display: inline-block;
+    padding: .15rem .4rem;
+    margin-right: .35rem;
+    border-radius: 3px;
+    font-size: .65rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.wet-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: .2rem;
+    padding: .2rem .5rem;
+    border-radius: 4px;
+    font-size: .7rem;
+    font-weight: 700;
+}
+
+.wet-badge-wet { background: #e3f2fd; color: #1565c0; }
+.wet-badge-dry { background: #fff8e1; color: #f57f17; }
+
+.entries-badge {
+    display: inline-block;
+    padding: .25rem .5rem;
+    background: var(--paper);
+    border-radius: 4px;
+    font-size: .85rem;
+    font-weight: 600;
+    color: var(--steel);
+}
+
+/* Events Grid */
+.events-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1rem;
+}
+
+.event-card {
+    display: block;
+    padding: 1rem;
+    background: var(--paper);
+    border: 2px solid var(--line);
+    border-radius: var(--radius);
+    text-decoration: none;
+    color: var(--ink);
+    transition: all .2s ease;
+}
+
+.event-card:hover {
+    background: var(--surface);
+    border-color: var(--signal);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(200, 16, 46, 0.1);
+}
+
+.event-card-active {
+    background: var(--surface);
+    border-color: var(--signal);
+    box-shadow: 0 0 0 3px rgba(200, 16, 46, 0.1);
+}
+
+.event-card-header {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    margin-bottom: .5rem;
+}
+
+.event-card-icon {
+    font-size: 1.5rem;
+    color: var(--signal);
+}
+
+.event-card-title {
+    font-family: var(--font-display);
+    font-size: 1.1rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+}
+
+.event-card-meta {
+    display: flex;
+    flex-direction: column;
+    gap: .25rem;
+    margin-bottom: .5rem;
+}
+
+.event-card-track {
+    font-size: .85rem;
+    color: var(--ink-muted);
+    font-weight: 500;
+}
+
+.event-card-sessions {
+    font-size: .75rem;
+    color: var(--ink-muted);
+}
+
+.event-card-sessions-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .35rem;
+}
+
+.session-type-tag {
+    display: inline-block;
+    padding: .15rem .4rem;
+    border-radius: 3px;
+    font-size: .65rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.session-type-tag-r { background: var(--signal-soft); color: var(--signal-dark); }
+.session-type-tag-q { background: #e8edf4; color: var(--steel); }
+.session-type-tag-p { background: var(--ok-soft); color: var(--ok); }
+.session-type-tag-fp { background: var(--ok-soft); color: var(--ok); }
+
+/* ============================================
+   4. FORMS - Form Enhancements
+   ============================================ */
+
+.form-panel {
+    border: 2px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--paper);
+}
+
+.form-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .5rem;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--line);
+}
+
+/* ============================================
+   5. LOGS & CONFIGS - Special Components
+   ============================================ */
+
+.tab-icon {
+    font-size: 1rem;
+    margin-right: .35rem;
+    vertical-align: middle;
+}
+
+.log-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: .5rem .75rem;
+}
+
+.cfg-edit-link {
+    display: flex;
+    align-items: center;
+    gap: .25rem;
+    color: var(--signal);
+    text-decoration: none;
+    font-weight: 600;
+    transition: color .2s ease;
+}
+
+.cfg-edit-link:hover { color: var(--signal-dark); }
+
+/* ============================================
+   5.5. DETAILED STATS - Session Analysis
+   ============================================ */
+
+.detailed-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.detailed-stat-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    transition: all .2s ease;
+}
+
+.detailed-stat-card:hover {
+    background: var(--surface);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+}
+
+.detailed-stat-icon {
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    flex-shrink: 0;
+}
+
+.detailed-stat-icon .material-icons {
+    font-size: 1.5rem;
+}
+
+.detailed-stat-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.detailed-stat-label {
+    font-size: .75rem;
+    color: var(--ink-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    font-weight: 600;
+    margin-bottom: .25rem;
+}
+
+.detailed-stat-value {
+    font-family: var(--font-display);
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--ink);
+    line-height: 1.2;
+}
+
+.detailed-stat-sub {
+    font-size: .75rem;
+    color: var(--ink-muted);
+    font-weight: 500;
+    margin-top: .15rem;
+    font-variant-numeric: tabular-nums;
+}
+
+.sector-tag {
+    display: inline-block;
+    padding: .1rem .35rem;
+    margin-right: .25rem;
+    background: #f3e8ff;
+    color: #6b21a8;
+    border-radius: 3px;
+    font-size: .7rem;
+    font-weight: 600;
+}
+
+/* Driver Statistics section inside expanded lap panel */
+.driver-stats-section {
+    margin-top: 1.25rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--line);
+}
+
+.driver-stats-title {
+    display: flex;
+    align-items: center;
+    gap: .4rem;
+    margin: 0 0 .75rem;
+    font-size: .9rem;
+    font-weight: 700;
+    color: var(--ink);
+}
+
+.driver-stats-title .material-icons {
+    font-size: 1.1rem;
+    color: #7c3aed;
+}
+
+/* Best sector highlighting in expanded laps table */
+.sector-best-s1,
+.sector-best-s2,
+.sector-best-s3 {
+    background: #f3e8ff;
+    color: #7c3aed;
+    font-weight: bold;
+    padding: .15rem .35rem;
+    border-radius: 3px;
+}
+
+/* ============================================
+   6. RESPONSIVE - Mobile Adjustments
+   ============================================ */
+
+@media (max-width: 768px) {
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .detailed-stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .session-header,
+    .instance-header,
+    .config-header,
+    .edit-header {
+        flex-direction: column;
+    }
+    
+    .session-best-lap {
+        text-align: left;
+        width: 100%;
+    }
+    
+    .best-lap-label {
+        justify-content: flex-start;
+    }
+}
+
+@media (max-width: 480px) {
+    .detailed-stats-grid {
+        grid-template-columns: 1fr;
+    }
+}
