@@ -6,7 +6,7 @@
 {% block breadcrumbs %}
 {% clear_breadcrumbs %}
 {% for b, u in path %}
-{% breadcrumb_raw_safe b u %}
+    {% breadcrumb_raw_safe b u %}
 {% endfor %}
 {% endblock %}
 
@@ -14,19 +14,34 @@
 
 <div class="breadcrumb-wrap">{% render_breadcrumbs %}</div>
 
-<div class="page-header">
-    <div>
-        <h1 class="page-title">{{ cfg }}</h1>
-        <p class="page-lead">Edit event JSON fields. Changes save on field update.</p>
+<div class="config-header">
+    <div class="config-header-main">
+        <div class="config-badges">
+            <span class="config-badge">
+                <span class="material-icons badge-icon">description</span>
+                Config File
+            </span>
+        </div>
+        <h1 class="config-name">
+            <span class="material-icons config-name-icon">settings</span>
+            {{ cfg }}
+        </h1>
+        <p class="config-lead">Edit event JSON fields. Changes save on field update.</p>
     </div>
-    <div class="page-actions">
-        <a href="/cfgs" class="btn btn-outline-secondary btn-sm">All configs</a>
+    <div class="config-actions">
+        <a href="/cfgs" class="btn btn-outline-secondary btn-sm">
+            <span class="material-icons btn-icon">arrow_back</span>
+            All configs
+        </a>
     </div>
 </div>
 
 <div class="panel">
     <div class="panel-head">
-        <h2>Fields</h2>
+        <h2>
+            <span class="material-icons panel-icon">tune</span>
+            Fields
+        </h2>
     </div>
     <div class="panel-body">
         {% if form is not None %}
@@ -38,7 +53,7 @@
 
         {% if forms is not None %}
         {% for frm in forms %}
-        <div id="form{{forloop.counter0}}" class="panel" style="display:none; box-shadow:none; margin-bottom:1rem;">
+        <div id="form{{forloop.counter0}}" class="panel form-panel" style="display:none; box-shadow:none; margin-bottom:1rem;">
             <div class="panel-body">
                 <form action="" method="post">
                     {% csrf_token %}
@@ -49,7 +64,7 @@
         </div>
         {% endfor %}
 
-        <div class="page-actions" style="margin-top:.5rem;">
+        <div class="form-actions">
             <input id="prevbutton" type="button" value="Previous" class="btn btn-outline-secondary" disabled/>
             <input id="nextbutton" type="button" value="Next" class="btn btn-outline-secondary" disabled/>
             <input id="removebutton" type="button" class="btn btn-danger" value="Remove" disabled/>
@@ -81,6 +96,93 @@
         {% endif %}
     </div>
 </div>
+
+<style>
+    .config-header {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 1.5rem;
+        margin-bottom: 1.5rem;
+        padding: 1.5rem;
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        animation: rise .45s ease both;
+    }
+    .config-header-main { flex: 1; min-width: 200px; }
+    .config-badges { display: flex; gap: .5rem; margin-bottom: .75rem; flex-wrap: wrap; }
+    .config-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: .3rem;
+        padding: .3rem .7rem;
+        border-radius: 4px;
+        font-size: .75rem;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        background: var(--paper);
+        color: var(--steel);
+    }
+    .badge-icon { font-size: 1rem; }
+    .config-name {
+        margin: 0 0 .35rem;
+        font-family: var(--font-display);
+        font-weight: 600;
+        font-size: clamp(1.5rem, 3vw, 2rem);
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        line-height: 1.1;
+        display: flex;
+        align-items: center;
+        gap: .5rem;
+    }
+    .config-name-icon {
+        font-size: 1.5rem;
+        color: var(--signal);
+    }
+    .config-lead {
+        margin: 0;
+        color: var(--ink-muted);
+        font-size: .9rem;
+    }
+    .config-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: .5rem;
+    }
+
+    .panel-icon {
+        font-size: 1.25rem;
+        color: var(--signal);
+        margin-right: .5rem;
+        vertical-align: middle;
+    }
+
+    .form-panel {
+        border: 2px solid var(--line);
+        border-radius: var(--radius);
+        background: var(--paper);
+    }
+
+    .form-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: .5rem;
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid var(--line);
+    }
+
+    .btn-icon {
+        font-size: 1rem;
+        vertical-align: middle;
+        margin-right: .25rem;
+    }
+</style>
 
 <script>
 $(function() {

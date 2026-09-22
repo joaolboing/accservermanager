@@ -2,13 +2,25 @@
 {% block title %}Edit {{ name }} · ACC Manager{% endblock %}
 {% block content %}
 
-<div class="page-header">
-    <div>
-        <h1 class="page-title">Edit instance</h1>
-        <p class="page-lead"><span class="mono">{{ name }}</span></p>
+<div class="edit-header">
+    <div class="edit-header-main">
+        <div class="edit-badges">
+            <span class="edit-badge">
+                <span class="material-icons badge-icon">edit</span>
+                Editing Instance
+            </span>
+        </div>
+        <h1 class="edit-name">
+            <span class="material-icons edit-name-icon">dns</span>
+            {{ name }}
+        </h1>
+        <p class="edit-lead">Modify instance configuration and settings.</p>
     </div>
-    <div class="page-actions">
-        <a href="/instances" class="btn btn-outline-secondary btn-sm">Back</a>
+    <div class="edit-actions">
+        <a href="/instances" class="btn btn-outline-secondary btn-sm">
+            <span class="material-icons btn-icon">arrow_back</span>
+            Back
+        </a>
     </div>
 </div>
 
@@ -21,12 +33,18 @@
 {% endif %}
 
 {% if running %}
-<div class="flash flash-warn">Instance is running. Changes are saved to disk — restart to apply.</div>
+<div class="flash flash-warn">
+    <span class="material-icons" style="font-size:1.1rem; vertical-align:middle; margin-right:.35rem;">warning</span>
+    Instance is running. Changes are saved to disk — restart to apply.
+</div>
 {% endif %}
 
 <div class="panel">
     <div class="panel-head">
-        <h2>Configuration</h2>
+        <h2>
+            <span class="material-icons panel-icon">tune</span>
+            Configuration
+        </h2>
     </div>
     <div class="panel-body">
         {% load django_bootstrap5 %}
@@ -37,6 +55,7 @@
                 <div class="accordion-item">
                     <h2 class="accordion-header">
                         <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSettings" aria-expanded="true">
+                            <span class="material-icons accordion-icon">settings</span>
                             Settings
                         </button>
                     </h2>
@@ -47,6 +66,7 @@
                 <div class="accordion-item">
                     <h2 class="accordion-header">
                         <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseConfiguration">
+                            <span class="material-icons accordion-icon">tune</span>
                             Configuration
                         </button>
                     </h2>
@@ -57,6 +77,7 @@
                 <div class="accordion-item">
                     <h2 class="accordion-header">
                         <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseAssistRules">
+                            <span class="material-icons accordion-icon">help_outline</span>
                             Assist rules
                         </button>
                     </h2>
@@ -67,6 +88,7 @@
                 <div class="accordion-item">
                     <h2 class="accordion-header">
                         <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseEventRules">
+                            <span class="material-icons accordion-icon">rule</span>
                             Event rules
                         </button>
                     </h2>
@@ -75,10 +97,105 @@
                     </div>
                 </div>
             </div>
-            <button class="btn btn-primary" type="submit">Save changes</button>
-            <a href="/instances" class="btn btn-outline-secondary">Cancel</a>
+            <div class="form-actions">
+                <button class="btn btn-primary" type="submit">
+                    <span class="material-icons btn-icon">save</span>
+                    Save changes
+                </button>
+                <a href="/instances" class="btn btn-outline-secondary">
+                    <span class="material-icons btn-icon">close</span>
+                    Cancel
+                </a>
+            </div>
         </form>
     </div>
 </div>
+
+<style>
+    .edit-header {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 1.5rem;
+        margin-bottom: 1.5rem;
+        padding: 1.5rem;
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        animation: rise .45s ease both;
+    }
+    .edit-header-main { flex: 1; min-width: 200px; }
+    .edit-badges { display: flex; gap: .5rem; margin-bottom: .75rem; flex-wrap: wrap; }
+    .edit-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: .3rem;
+        padding: .3rem .7rem;
+        border-radius: 4px;
+        font-size: .75rem;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        background: var(--signal-soft);
+        color: var(--signal-dark);
+    }
+    .badge-icon { font-size: 1rem; }
+    .edit-name {
+        margin: 0 0 .35rem;
+        font-family: var(--font-display);
+        font-weight: 600;
+        font-size: clamp(1.5rem, 3vw, 2rem);
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        line-height: 1.1;
+        display: flex;
+        align-items: center;
+        gap: .5rem;
+    }
+    .edit-name-icon {
+        font-size: 1.5rem;
+        color: var(--signal);
+    }
+    .edit-lead {
+        margin: 0;
+        color: var(--ink-muted);
+        font-size: .9rem;
+    }
+    .edit-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: .5rem;
+    }
+
+    .panel-icon {
+        font-size: 1.25rem;
+        color: var(--signal);
+        margin-right: .5rem;
+        vertical-align: middle;
+    }
+
+    .accordion-icon {
+        font-size: 1.25rem;
+        color: var(--signal);
+        margin-right: .5rem;
+    }
+
+    .form-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: .5rem;
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid var(--line);
+    }
+
+    .btn-icon {
+        font-size: 1rem;
+        vertical-align: middle;
+        margin-right: .25rem;
+    }
+</style>
 
 {% endblock %}

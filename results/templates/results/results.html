@@ -130,12 +130,18 @@
             <span class="material-icons btn-icon">arrow_back</span>
             All Sessions
         </a>
-        {% elif is_global %}
-        {% else %}
+        {% elif not is_global %}
+        {% if user.is_authenticated %}
         <a href="/instances/{{ instance }}/" class="btn btn-outline-secondary btn-sm">
             <span class="material-icons btn-icon">arrow_back</span>
             Back to Instance
         </a>
+        {% else %}
+        <a href="/results/" class="btn btn-outline-secondary btn-sm">
+            <span class="material-icons btn-icon">arrow_back</span>
+            All Results
+        </a>
+        {% endif %}
         {% endif %}
     </div>
 </div>

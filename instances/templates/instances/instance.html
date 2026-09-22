@@ -6,36 +6,102 @@
 {% block breadcrumbs %}
 {% clear_breadcrumbs %}
 {% for b, u in path %}
-{% breadcrumb_raw_safe b u %}
+    {% breadcrumb_raw_safe b u %}
 {% endfor %}
 {% endblock %}
 
 <div class="breadcrumb-wrap">{% render_breadcrumbs %}</div>
 
-<div class="page-header">
-    <div>
-        <h1 class="page-title">{{ name }}</h1>
-        <p class="page-lead" style="display:flex; flex-wrap:wrap; gap:.65rem; align-items:center; margin-top:.5rem;">
+<div class="instance-header">
+    <div class="instance-header-main">
+        <div class="instance-badges">
             {% if executor.is_alive %}
-                <span class="status-pill live"><span class="dot"></span> Running · PID {{ executor.p.pid }}</span>
+                <span class="instance-badge instance-badge-live">
+                    <span class="material-icons badge-icon">play_circle</span>
+                    Running
+                </span>
             {% else %}
-                <span class="status-pill dead"><span class="dot"></span> Stopped{% if executor.retval != None %} · exit {{ executor.retval }}{% endif %}</span>
+                <span class="instance-badge instance-badge-dead">
+                    <span class="material-icons badge-icon">stop_circle</span>
+                    Stopped
+                </span>
             {% endif %}
-            <span class="mono">UDP {{ executor.udpPort }}</span>
-            <span class="mono">TCP {{ executor.tcpPort }}</span>
-            <span class="mono">{{ executor.config }}</span>
+        </div>
+        <h1 class="instance-name">
+            <span class="material-icons instance-name-icon">dns</span>
+            {{ name }}
+        </h1>
+        <p class="instance-meta">
+            {% if executor.is_alive %}
+                <span class="meta-item">
+                    <span class="material-icons meta-icon">tag</span>
+                    PID {{ executor.p.pid }}
+                </span>
+            {% else %}
+                {% if executor.retval != None %}
+                <span class="meta-item">
+                    <span class="material-icons meta-icon">info</span>
+                    Exit {{ executor.retval }}
+                </span>
+                {% endif %}
+            {% endif %}
+            <span class="meta-item">
+                <span class="material-icons meta-icon">swap_vert</span>
+                UDP {{ executor.udpPort }}
+            </span>
+            <span class="meta-item">
+                <span class="material-icons meta-icon">swap_horiz</span>
+                TCP {{ executor.tcpPort }}
+            </span>
+            <span class="meta-item">
+                <span class="material-icons meta-icon">description</span>
+                {{ executor.config }}
+            </span>
         </p>
     </div>
-    <div class="page-actions">
-        <a href="/instances/{{ name }}/results/" class="btn btn-primary btn-sm">Results</a>
-        <a href="/instances/{{ name }}/edit" class="btn btn-outline-secondary btn-sm">Edit</a>
-        <a href="/instances" class="btn btn-outline-secondary btn-sm">Back</a>
+    <div class="instance-actions">
+        <a href="/instances/{{ name }}/results/" class="btn btn-primary btn-sm">
+            <span class="material-icons btn-icon">leaderboard</span>
+            Results
+        </a>
+        <a href="/instances/{{ name }}/edit" class="btn btn-outline-secondary btn-sm">
+            <span class="material-icons btn-icon">edit</span>
+            Edit
+        </a>
+        <a href="/instances" class="btn btn-outline-secondary btn-sm">
+            <span class="material-icons btn-icon">arrow_back</span>
+            Back
+        </a>
+    </div>
+</div>
+
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-icon">
+            <span class="material-icons">terminal</span>
+        </div>
+        <div class="stat-content">
+            <div class="stat-value">{{ live|length }}</div>
+            <div class="stat-label">Log Streams</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon">
+            <span class="material-icons">settings</span>
+        </div>
+        <div class="stat-content">
+            <div class="stat-value">{{ configs|length }}</div>
+            <div class="stat-label">Config Files</div>
+        </div>
     </div>
 </div>
 
 <div class="panel">
     <div class="panel-head">
-        <h2>Live logs</h2>
+        <h2>
+            <span class="material-icons panel-icon">terminal</span>
+            Live logs
+        </h2>
         <small class="text-muted">Auto-refresh every 2s</small>
     </div>
     <ul class="nav nav-tabs" id="logTabs" role="tablist">
@@ -46,7 +112,10 @@
                     data-bs-toggle="tab"
                     data-bs-target="#pane-{{ r.path }}"
                     type="button"
-                    role="tab">{{ r.label }}</button>
+                    role="tab">
+                <span class="material-icons tab-icon">article</span>
+                {{ r.label }}
+            </button>
         </li>
         {% endfor %}
     </ul>
@@ -55,9 +124,15 @@
         <div class="tab-pane fade{% if forloop.first %} show active{% endif %}"
              id="pane-{{ r.path }}"
              role="tabpanel">
-            <div class="panel-head" style="border:none; background:#161a20; color:#8b93a0;">
-                <span style="font-size:.75rem;">{{ r.label }}</span>
-                <a href="{{ request.path }}{{ r.path }}" style="color:#9cdcfe; font-size:.75rem;">Download full</a>
+            <div class="panel-head log-header" style="border:none; background:#161a20; color:#8b93a0;">
+                <span style="font-size:.75rem;">
+                    <span class="material-icons" style="font-size:.9rem; vertical-align: middle;">terminal</span>
+                    {{ r.label }}
+                </span>
+                <a href="{{ request.path }}{{ r.path }}" style="color:#9cdcfe; font-size:.75rem;">
+                    <span class="material-icons" style="font-size:.9rem; vertical-align: middle;">download</span>
+                    Download full
+                </a>
             </div>
             <textarea id="{{ r.path }}" class="log-view" readonly spellcheck="false"></textarea>
         </div>
@@ -67,20 +142,184 @@
 
 <div class="panel">
     <div class="panel-head">
-        <h2>Configuration files</h2>
+        <h2>
+            <span class="material-icons panel-icon">settings</span>
+            Configuration files
+        </h2>
     </div>
     <div class="cfg-grid">
         {% for r in configs %}
         <div class="cfg-card">
             <div class="cfg-head">
-                <span>{{ r.label }}</span>
-                <a href="{{ request.path }}{{ r.path }}">{{ r.text }}</a>
+                <span>
+                    <span class="material-icons cfg-icon">description</span>
+                    {{ r.label }}
+                </span>
+                <a href="{{ request.path }}{{ r.path }}" class="cfg-edit-link">
+                    <span class="material-icons" style="font-size:1rem; vertical-align: middle;">edit</span>
+                    {{ r.text }}
+                </a>
             </div>
             <textarea id="{{ r.path }}" class="log-view" style="min-height:180px; max-height:260px;" readonly spellcheck="false"></textarea>
         </div>
         {% endfor %}
     </div>
 </div>
+
+<style>
+    .instance-header {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 1.5rem;
+        margin-bottom: 1.5rem;
+        padding: 1.5rem;
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        animation: rise .45s ease both;
+    }
+    .instance-header-main { flex: 1; min-width: 200px; }
+    .instance-badges { display: flex; gap: .5rem; margin-bottom: .75rem; flex-wrap: wrap; }
+    .instance-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: .3rem;
+        padding: .3rem .7rem;
+        border-radius: 4px;
+        font-size: .75rem;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+    }
+    .badge-icon { font-size: 1rem; }
+    .instance-badge-live { background: var(--ok-soft); color: var(--ok); }
+    .instance-badge-dead { background: var(--dead-soft); color: var(--dead); }
+    .instance-name {
+        margin: 0 0 .35rem;
+        font-family: var(--font-display);
+        font-weight: 600;
+        font-size: clamp(1.5rem, 3vw, 2rem);
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        line-height: 1.1;
+        display: flex;
+        align-items: center;
+        gap: .5rem;
+    }
+    .instance-name-icon {
+        font-size: 1.5rem;
+        color: var(--signal);
+    }
+    .instance-meta {
+        margin: 0;
+        color: var(--ink-muted);
+        font-size: .9rem;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        align-items: center;
+    }
+    .meta-item {
+        display: flex;
+        align-items: center;
+        gap: .25rem;
+    }
+    .meta-icon { font-size: 1rem; }
+    .instance-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: .5rem;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    .stat-card {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1.25rem;
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        animation: rise .5s ease both;
+    }
+    .stat-icon {
+        width: 48px;
+        height: 48px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 10px;
+        background: var(--paper);
+        color: var(--ink-muted);
+    }
+    .stat-icon .material-icons { font-size: 1.5rem; }
+    .stat-value {
+        font-family: var(--font-display);
+        font-size: 1.75rem;
+        font-weight: 700;
+        line-height: 1;
+    }
+    .stat-label {
+        font-size: .75rem;
+        color: var(--ink-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        font-weight: 600;
+    }
+
+    .panel-icon {
+        font-size: 1.25rem;
+        color: var(--signal);
+        margin-right: .5rem;
+        vertical-align: middle;
+    }
+
+    .tab-icon {
+        font-size: 1rem;
+        margin-right: .35rem;
+        vertical-align: middle;
+    }
+
+    .log-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: .5rem .75rem;
+    }
+
+    .cfg-icon {
+        font-size: 1.1rem;
+        color: var(--signal);
+        margin-right: .35rem;
+        vertical-align: middle;
+    }
+
+    .cfg-edit-link {
+        display: flex;
+        align-items: center;
+        gap: .25rem;
+        color: var(--signal);
+        text-decoration: none;
+        font-weight: 600;
+        transition: color .2s ease;
+    }
+    .cfg-edit-link:hover { color: var(--signal-dark); }
+
+    .btn-icon {
+        font-size: 1rem;
+        vertical-align: middle;
+        margin-right: .25rem;
+    }
+</style>
 
 <script>
 {% for r in live %}

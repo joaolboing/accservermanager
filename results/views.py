@@ -575,7 +575,9 @@ def parse_url(args, kwargs):
     return os.path.join(results_path, result + ".json")
 
 
-@role_required("Admin", "Operator", "Viewer")
+# Public page: session detail only (data already available via the public
+# JSON endpoints used by simresults.net). Management views stay behind
+# role_required.
 def results(request, *args, **kwargs):
     """Read the select results file and display the selected portion of the json object"""
     results = json.load(open(parse_url(args, kwargs), "rb"))
@@ -647,6 +649,7 @@ def results(request, *args, **kwargs):
         "instance": kwargs["instance"],
         "title": args[0] if args else "Result",
         "is_detail": True,
+        "public_page": True,
         "session_info": {
             "track_name": track_name,
             "track_code": track_code,
@@ -761,7 +764,8 @@ def get_race_day(session_type, hour_of_day, event_sessions):
     return ''
 
 
-@role_required("Admin", "Operator", "Viewer")
+# Public page: per-instance session listing only (same metadata as the
+# global /results/ listing). Management views stay behind role_required.
 def resultSelect(request, instance):
     """Show available results"""
     results_path = os.path.join(DATA_DIR, "instances", instance, "results")
@@ -850,16 +854,19 @@ def resultSelect(request, instance):
         "instance": instance,
         "title": "Results",
         "is_detail": False,
+        "public_page": True,
     }
     return render(request, "results/results.html", context)
 
 
-@role_required("Admin", "Operator", "Viewer")
+# Public page: session listing only. Detail/download views stay behind
+# role_required, so anonymous users cannot reach any other data.
 def all_results(request):
     from accservermanager.settings import DATA_DIR
 
     instances_dir = os.path.join(DATA_DIR, "instances")
     all_items = []
+    event_sessions_cache = {}
     for inst_dir in sorted(glob.glob(os.path.join(instances_dir, "*"))):
         if not os.path.isdir(inst_dir):
             continue
@@ -867,14 +874,20 @@ def all_results(request):
         results_path = os.path.join(inst_dir, "results")
         if not os.path.isdir(results_path):
             continue
+        if inst_name not in event_sessions_cache:
+            event_sessions_cache[inst_name] = get_event_sessions(inst_name)
+        event_sessions = event_sessions_cache[inst_name]
         files = sorted(glob.glob(os.path.join(results_path, "*.json")), reverse=True)
         files = [f for f in files if not f.endswith("entrylist.json")]
         for f in files:
             try:
                 r = json.load(open(f, "rb"))
                 parsed = parse_session_name(os.path.splitext(ntpath.basename(f))[0])
+                session_type = r.get("sessionType", "")
+                hour = parsed.get("datetime")
+                hour_of_day = hour.hour if hour else 0
+                race_day = get_race_day(session_type, hour_of_day, event_sessions)
                 race_weekend_index = r.get("raceWeekendIndex")
-                race_day = RACE_WEEKEND_DAYS.get(race_weekend_index, '')
                 all_items.append(
                     dict(
                         instance=inst_name,
@@ -889,7 +902,7 @@ def all_results(request):
                         track=r["trackName"],
                     )
                 )
-            except (json.JSONDecodeError, KeyError):
+            except (json.JSONDecodeError, KeyError, TypeError):
                 continue
 
     all_items.sort(key=lambda x: x.get("name", ""), reverse=True)
@@ -903,5 +916,6 @@ def all_results(request):
         "title": "Results",
         "is_detail": False,
         "is_global": True,
+        "public_page": True,
     }
     return render(request, "results/results.html", context)

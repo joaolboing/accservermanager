@@ -7,6 +7,8 @@
 {% user_is_admin as is_admin %}
 {% user_is_operator as is_operator %}
 {% user_is_viewer as is_viewer %}
+{% endif %}
+{% if user.is_authenticated or public_page %}
 <div class="app-shell">
     <header>
         <nav class="app-nav">
@@ -15,11 +17,12 @@
                 <span class="brand-sub">Race control</span>
             </a>
             <ul class="nav-links">
-                {% if has_edit %}
+                {% if user.is_authenticated and has_edit %}
                 <li><a href="/cfgs" class="{% if '/cfgs' in request.path %}is-active{% endif %}">Configs</a></li>
                 <li><a href="/instances" class="{% if '/instances' in request.path %}is-active{% endif %}">Instances</a></li>
                 {% endif %}
                 <li><a href="/results/" class="{% if '/results' in request.path %}is-active{% endif %}">Results</a></li>
+                {% if user.is_authenticated %}
                 {% if is_admin %}
                 <li><span class="status-pill live" style="font-size:.7rem;"><span class="dot"></span> Admin</span></li>
                 {% elif is_operator %}
@@ -28,6 +31,9 @@
                 <li><span class="status-pill dead" style="font-size:.7rem;"><span class="dot"></span> Viewer</span></li>
                 {% endif %}
                 <li><a href="{% url 'logout' %}">Logout</a></li>
+                {% else %}
+                <li><a href="{% url 'login' %}?next=/results/">Login</a></li>
+                {% endif %}
             </ul>
         </nav>
     </header>

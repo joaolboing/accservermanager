@@ -20,14 +20,57 @@
     {% endfor %}
 {% endif %}
 
+{% with alive_count=0 dead_count=0 %}
+{% for name, executor in executors.items %}
+    {% if executor.is_alive %}
+        {% with alive_count=alive_count|add:1 %}{% endwith %}
+    {% else %}
+        {% with dead_count=dead_count|add:1 %}{% endwith %}
+    {% endif %}
+{% endfor %}
+
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-icon">
+            <span class="material-icons">dns</span>
+        </div>
+        <div class="stat-content">
+            <div class="stat-value">{{ executors|length }}</div>
+            <div class="stat-label">Total Instances</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon stat-icon-live">
+            <span class="material-icons">play_circle</span>
+        </div>
+        <div class="stat-content">
+            <div class="stat-value">{{ executors|length|add:0 }}</div>
+            <div class="stat-label">Running</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon stat-icon-dead">
+            <span class="material-icons">stop_circle</span>
+        </div>
+        <div class="stat-content">
+            <div class="stat-value">{{ executors|length|add:0 }}</div>
+            <div class="stat-label">Stopped</div>
+        </div>
+    </div>
+</div>
+{% endwith %}
+
 <div class="panel">
     <div class="panel-head">
-        <h2>Running fleet</h2>
+        <h2>
+            <span class="material-icons panel-icon">list</span>
+            Running fleet
+        </h2>
         <span class="text-muted" style="font-size:.8rem;">{{ executors|length }} instance{{ executors|length|pluralize }}</span>
     </div>
-    <div class="panel-body" style="padding:0; overflow-x:auto;">
+    <div class="panel-body" style="padding:0;">
         {% if executors %}
-        <table class="data-table">
+        <table class="data-table instances-table">
             <thead>
                 <tr>
                     <th>Instance</th>
@@ -41,14 +84,25 @@
             </thead>
             <tbody>
             {% for name,executor in executors.items %}
-                <tr id="row{{forloop.counter0}}">
+                <tr id="row{{forloop.counter0}}" class="{% if executor.is_alive %}row-alive{% else %}row-dead{% endif %}">
                     <td>
-                        <a href="/instances/{{name}}" style="font-weight:700; text-decoration:none; color:var(--ink);">{{name}}</a>
+                        <a href="/instances/{{name}}" class="instance-link">
+                            <span class="material-icons instance-icon">dns</span>
+                            {{name}}
+                        </a>
                     </td>
-                    <td>{{executor.serverName}}</td>
-                    <td class="mono">{{executor.config}}</td>
-                    <td class="mono">{{executor.udpPort}}</td>
-                    <td class="mono">{{executor.tcpPort}}</td>
+                    <td>
+                        <span class="server-name">{{executor.serverName}}</span>
+                    </td>
+                    <td class="mono">
+                        <span class="config-badge">{{executor.config}}</span>
+                    </td>
+                    <td class="mono">
+                        <span class="port-badge">{{executor.udpPort}}</span>
+                    </td>
+                    <td class="mono">
+                        <span class="port-badge">{{executor.tcpPort}}</span>
+                    </td>
                     <td id="pid{{forloop.counter0}}">
                         {% if executor.is_alive %}
                             <span class="status-pill live"><span class="dot"></span> PID {{executor.p.pid}}</span>
@@ -60,20 +114,35 @@
                         <div class="row-actions">
                         {% if executor.is_alive %}
                             {% if has_edit %}
-                            <button id="stop{{forloop.counter0}}" class="btn btn-danger btn-sm" onclick="stop(this, '{{name}}')">Stop</button>
+                            <button id="stop{{forloop.counter0}}" class="btn btn-danger btn-sm" onclick="stop(this, '{{name}}')">
+                                <span class="material-icons btn-icon">stop</span>
+                                Stop
+                            </button>
                             {% endif %}
                             {% if has_edit %}
-                            <a href="/instances/{{name}}/edit" class="btn btn-outline-secondary btn-sm">Edit</a>
+                            <a href="/instances/{{name}}/edit" class="btn btn-outline-secondary btn-sm">
+                                <span class="material-icons btn-icon">edit</span>
+                                Edit
+                            </a>
                             {% endif %}
                         {% else %}
                             {% if has_edit %}
-                            <button id="restart{{forloop.counter0}}" class="btn btn-success btn-sm" onclick="start(this, '{{name}}')">Start</button>
+                            <button id="restart{{forloop.counter0}}" class="btn btn-success btn-sm" onclick="start(this, '{{name}}')">
+                                <span class="material-icons btn-icon">play_arrow</span>
+                                Start
+                            </button>
                             {% endif %}
                             {% if has_edit %}
-                            <a href="/instances/{{name}}/edit" class="btn btn-outline-secondary btn-sm">Edit</a>
+                            <a href="/instances/{{name}}/edit" class="btn btn-outline-secondary btn-sm">
+                                <span class="material-icons btn-icon">edit</span>
+                                Edit
+                            </a>
                             {% endif %}
                             {% if is_admin %}
-                            <button id="delete{{forloop.counter0}}" class="btn btn-outline-secondary btn-sm" onclick="del(this, '{{name}}')">Delete</button>
+                            <button id="delete{{forloop.counter0}}" class="btn btn-outline-secondary btn-sm" onclick="del(this, '{{name}}')">
+                                <span class="material-icons btn-icon">delete</span>
+                                Delete
+                            </button>
                             {% endif %}
                         {% endif %}
                         </div>
@@ -83,7 +152,8 @@
             </tbody>
         </table>
         {% else %}
-        <div class="panel-body">
+        <div class="empty-state">
+            <span class="material-icons empty-icon">dns</span>
             <p class="page-lead" style="margin:0;">No instances yet. Create one below.</p>
         </div>
         {% endif %}
@@ -93,7 +163,10 @@
 {% if has_edit %}
 <div class="panel">
     <div class="panel-head">
-        <h2>Create instance</h2>
+        <h2>
+            <span class="material-icons panel-icon">add_circle</span>
+            Create instance
+        </h2>
     </div>
     <div class="panel-body">
         <form name="instance_form" action="start" method="POST"
@@ -104,6 +177,7 @@
                 <div class="accordion-item">
                     <h2 class="accordion-header" id="headingSettings">
                         <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSettings" aria-expanded="true" aria-controls="collapseSettings">
+                            <span class="material-icons accordion-icon">settings</span>
                             Settings
                         </button>
                     </h2>
@@ -116,6 +190,7 @@
                 <div class="accordion-item">
                     <h2 class="accordion-header" id="headingConfiguration">
                         <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseConfiguration" aria-expanded="false" aria-controls="collapseConfiguration">
+                            <span class="material-icons accordion-icon">tune</span>
                             Configuration
                         </button>
                     </h2>
@@ -128,6 +203,7 @@
                 <div class="accordion-item">
                     <h2 class="accordion-header" id="headingAssistRules">
                         <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseAssistRules" aria-expanded="false" aria-controls="collapseAssistRules">
+                            <span class="material-icons accordion-icon">help_outline</span>
                             Assist rules
                         </button>
                     </h2>
@@ -140,6 +216,7 @@
                 <div class="accordion-item">
                     <h2 class="accordion-header" id="headingEventRules">
                         <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseEventRules" aria-expanded="false" aria-controls="collapseEventRules">
+                            <span class="material-icons accordion-icon">rule</span>
                             Event rules
                         </button>
                     </h2>
@@ -150,17 +227,139 @@
                     </div>
                 </div>
             </div>
-            <button class="btn btn-primary" type="submit">Create &amp; start</button>
+            <button class="btn btn-primary" type="submit">
+                <span class="material-icons btn-icon">rocket_launch</span>
+                Create &amp; start
+            </button>
         </form>
     </div>
 </div>
 {% endif %}
 
+<style>
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    .stat-card {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1.25rem;
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        animation: rise .5s ease both;
+    }
+    .stat-icon {
+        width: 48px;
+        height: 48px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 10px;
+        background: var(--paper);
+        color: var(--ink-muted);
+    }
+    .stat-icon .material-icons { font-size: 1.5rem; }
+    .stat-icon-live { background: var(--ok-soft); color: var(--ok); }
+    .stat-icon-dead { background: var(--dead-soft); color: var(--dead); }
+    .stat-value {
+        font-family: var(--font-display);
+        font-size: 1.75rem;
+        font-weight: 700;
+        line-height: 1;
+    }
+    .stat-label {
+        font-size: .75rem;
+        color: var(--ink-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        font-weight: 600;
+    }
+
+    .panel-icon {
+        font-size: 1.25rem;
+        color: var(--signal);
+        margin-right: .5rem;
+        vertical-align: middle;
+    }
+
+    .instances-table tbody tr {
+        transition: all .2s ease;
+    }
+    .instances-table tbody tr:hover {
+        background: #f7f8fb;
+        transform: translateX(2px);
+    }
+    .row-alive { border-left: 3px solid var(--ok); }
+    .row-dead { border-left: 3px solid var(--dead); }
+
+    .instance-link {
+        display: flex;
+        align-items: center;
+        gap: .5rem;
+        font-weight: 700;
+        text-decoration: none;
+        color: var(--ink);
+        transition: color .2s ease;
+    }
+    .instance-link:hover { color: var(--signal); }
+    .instance-icon {
+        font-size: 1.25rem;
+        color: var(--signal);
+    }
+
+    .server-name {
+        font-weight: 500;
+        color: var(--steel);
+    }
+
+    .config-badge, .port-badge {
+        display: inline-block;
+        padding: .25rem .5rem;
+        background: var(--paper);
+        border-radius: 4px;
+        font-size: .85rem;
+        font-weight: 600;
+        color: var(--steel);
+    }
+
+    .btn-icon {
+        font-size: 1rem;
+        vertical-align: middle;
+        margin-right: .25rem;
+    }
+
+    .accordion-icon {
+        font-size: 1.25rem;
+        color: var(--signal);
+        margin-right: .5rem;
+    }
+
+    .empty-state {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 3rem 1rem;
+        text-align: center;
+    }
+    .empty-icon {
+        font-size: 4rem;
+        color: var(--line);
+        margin-bottom: 1rem;
+    }
+</style>
+
 <script>
     $('#message').on('click', function(){ $(this).remove(); });
 
     function start(el, name) {
-        el.innerHTML = 'Starting…';
+        el.innerHTML = '<span class="material-icons btn-icon">hourglass_empty</span>Starting…';
         el.disabled = true;
         var delel = $('#delete'+el.id.replace('restart',''))[0];
         if (delel) delel.disabled = true;
@@ -170,7 +369,7 @@
             );
             if (delel) {
                 delel.id = el.id.replace('restart','stop');
-                delel.innerHTML = 'Stop';
+                delel.innerHTML = '<span class="material-icons btn-icon">stop</span>Stop';
                 delel.className = 'btn btn-danger btn-sm';
                 delel.onclick = function() { stop(delel, name); };
                 delel.disabled = false;
@@ -179,14 +378,14 @@
         });
     }
     function stop(el, name) {
-        el.innerHTML = 'Stopping…';
+        el.innerHTML = '<span class="material-icons btn-icon">hourglass_empty</span>Stopping…';
         el.disabled = true;
         $.post("/instances/"+name+"/stop", function(json) {
             $('td#pid'+el.id.replace('stop','')).html(
                 '<span class="status-pill dead"><span class="dot"></span> exit '+json['retval']+'</span>'
             );
             el.id = el.id.replace('stop','delete');
-            el.innerHTML = 'Delete';
+            el.innerHTML = '<span class="material-icons btn-icon">delete</span>Delete';
             el.className = 'btn btn-outline-secondary btn-sm';
             el.onclick = function() { del(el, name); };
             el.disabled = false;

@@ -12,14 +12,29 @@
     </div>
 </div>
 
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-icon">
+            <span class="material-icons">folder</span>
+        </div>
+        <div class="stat-content">
+            <div class="stat-value">{{ cfgs|length }}</div>
+            <div class="stat-label">Total Configs</div>
+        </div>
+    </div>
+</div>
+
 <div class="panel">
     <div class="panel-head">
-        <h2>Existing configs</h2>
+        <h2>
+            <span class="material-icons panel-icon">list</span>
+            Existing configs
+        </h2>
         <span class="text-muted" style="font-size:.8rem;">{{ cfgs|length }} file{{ cfgs|length|pluralize }}</span>
     </div>
-    <div class="panel-body" style="padding:0; overflow-x:auto;">
+    <div class="panel-body" style="padding:0;">
         {% if cfgs %}
-        <table class="data-table">
+        <table class="data-table configs-table">
             <thead>
                 <tr>
                     <th>Name</th>
@@ -37,25 +52,34 @@
                                style="cursor:pointer; color:var(--signal); font-size:1.1rem;"
                                title="Rename" class="material-icons">edit</i>
                             {% endif %}
+                            <span class="material-icons cfg-icon">description</span>
                             <input id="cfgname{{forloop.counter0}}" name="cfgname"
-                                   class="form-control form-control-sm"
-                                   style="max-width:200px; font-weight:600;"
+                                   class="form-control form-control-sm cfg-input"
                                    oldvalue="{{cfg}}" value="{{cfg}}" readonly>
                         </form>
                     </td>
                     <td>
                         <div class="row-actions">
-                            <a href="/cfgs/{{cfg}}" class="btn btn-primary btn-sm">Edit</a>
+                            <a href="/cfgs/{{cfg}}" class="btn btn-primary btn-sm">
+                                <span class="material-icons btn-icon">edit</span>
+                                Edit
+                            </a>
                             {% if has_edit %}
                             <form style="margin:0; display:inline;" action="/cfgs/clone" method="post">{% csrf_token %}
                                 <input hidden name="cfg" value="{{cfg}}">
-                                <button type="submit" class="btn btn-outline-secondary btn-sm">Clone</button>
+                                <button type="submit" class="btn btn-outline-secondary btn-sm">
+                                    <span class="material-icons btn-icon">content_copy</span>
+                                    Clone
+                                </button>
                             </form>
                             {% endif %}
                             {% if is_admin %}
                             <form style="margin:0; display:inline;" action="/cfgs/delete" method="post">{% csrf_token %}
                                 <input hidden name="cfg" value="{{cfg}}">
-                                <button type="submit" class="btn btn-outline-secondary btn-sm">Delete</button>
+                                <button type="submit" class="btn btn-outline-secondary btn-sm">
+                                    <span class="material-icons btn-icon">delete</span>
+                                    Delete
+                                </button>
                             </form>
                             {% endif %}
                         </div>
@@ -82,7 +106,8 @@
             </tbody>
         </table>
         {% else %}
-        <div class="panel-body">
+        <div class="empty-state">
+            <span class="material-icons empty-icon">folder_open</span>
             <p class="page-lead" style="margin:0;">No configs yet. Create one below.</p>
         </div>
         {% endif %}
@@ -92,7 +117,10 @@
 {% if has_edit %}
 <div class="panel">
     <div class="panel-head">
-        <h2>Create config</h2>
+        <h2>
+            <span class="material-icons panel-icon">add_circle</span>
+            Create config
+        </h2>
     </div>
     <div class="panel-body">
         {% load django_bootstrap5 %}
@@ -102,11 +130,109 @@
                 {% bootstrap_form form %}
             </div>
             <div class="col-md-4">
-                <button type="submit" class="btn btn-primary w-100">Create</button>
+                <button type="submit" class="btn btn-primary w-100">
+                    <span class="material-icons btn-icon">add</span>
+                    Create
+                </button>
             </div>
         </form>
     </div>
 </div>
 {% endif %}
+
+<style>
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    .stat-card {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1.25rem;
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        animation: rise .5s ease both;
+    }
+    .stat-icon {
+        width: 48px;
+        height: 48px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 10px;
+        background: var(--paper);
+        color: var(--ink-muted);
+    }
+    .stat-icon .material-icons { font-size: 1.5rem; }
+    .stat-value {
+        font-family: var(--font-display);
+        font-size: 1.75rem;
+        font-weight: 700;
+        line-height: 1;
+    }
+    .stat-label {
+        font-size: .75rem;
+        color: var(--ink-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        font-weight: 600;
+    }
+
+    .panel-icon {
+        font-size: 1.25rem;
+        color: var(--signal);
+        margin-right: .5rem;
+        vertical-align: middle;
+    }
+
+    .configs-table tbody tr {
+        transition: all .2s ease;
+    }
+    .configs-table tbody tr:hover {
+        background: #f7f8fb;
+        transform: translateX(2px);
+    }
+
+    .cfg-icon {
+        font-size: 1.25rem;
+        color: var(--signal);
+    }
+
+    .cfg-input {
+        font-weight: 600;
+        border: none !important;
+        background: transparent !important;
+        padding: .25rem .5rem !important;
+    }
+    .cfg-input:focus {
+        background: var(--paper) !important;
+        border: 1px solid var(--signal) !important;
+    }
+
+    .btn-icon {
+        font-size: 1rem;
+        vertical-align: middle;
+        margin-right: .25rem;
+    }
+
+    .empty-state {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 3rem 1rem;
+        text-align: center;
+    }
+    .empty-icon {
+        font-size: 4rem;
+        color: var(--line);
+        margin-bottom: 1rem;
+    }
+</style>
 
 {% endblock %}

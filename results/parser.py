@@ -5,6 +5,7 @@ SESSION_TYPE_MAP = {
     'P': 'Practice',
     'Q': 'Qualifying',
     'R': 'Race',
+    'FP': 'Practice',
     'PRACTICE': 'Practice',
     'QUALIFY': 'Qualifying',
     'QUALIFYING': 'Qualifying',
@@ -14,6 +15,7 @@ SESSION_TYPE_MAP = {
 PATTERNS = [
     (re.compile(r'^(\d{4})_(\d{2})_(\d{2})_(\d{2})_(\d{2})_(.+)$'), 6),
     (re.compile(r'^(\d{4})(\d{2})(\d{2})_(\d{2})(\d{2})_(.+)$'), 6),
+    (re.compile(r'^(\d{2})(\d{2})(\d{2})_(\d{2})(\d{2})(\d{2})_(.+)$'), 7),
 ]
 
 
@@ -22,10 +24,16 @@ def parse_session_name(raw_name):
         m = pattern.match(raw_name)
         if m:
             try:
-                dt = datetime(
-                    int(m.group(1)), int(m.group(2)), int(m.group(3)),
-                    int(m.group(4)), int(m.group(5))
-                )
+                year = int(m.group(1))
+                month = int(m.group(2))
+                day = int(m.group(3))
+                hour = int(m.group(4))
+                minute = int(m.group(5))
+                
+                if year < 100:
+                    year += 2000
+                
+                dt = datetime(year, month, day, hour, minute)
                 session_code = m.group(type_group).strip().upper()
                 session_name = SESSION_TYPE_MAP.get(session_code, m.group(type_group).title())
                 return {

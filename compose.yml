@@ -1,0 +1,19 @@
+services:
+  acc:
+    image: joaolboing/accservermanager
+    volumes:
+      - ./server:/server
+      - data:/data
+    ports:
+      - 9232:9232/tcp
+      - 9232:9232/udp
+      - 9231:9231/tcp
+      - 9231:9231/udp
+      - 8000:8000
+    environment:
+      - ALLOWED_HOSTS=["*"]
+      - SECRET_KEY=accservermythboing
+      - ALLOW_SAME_PORTS=true
+
+volumes:
+  data:
